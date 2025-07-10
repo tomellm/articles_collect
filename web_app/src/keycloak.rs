@@ -8,7 +8,6 @@ use leptos_keycloak_auth::{
     UseKeycloakAuthOptions, ValidationOptions,
 };
 use serde::{Deserialize, Serialize};
-use tracing::info;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KeycloakInfo {
@@ -18,6 +17,7 @@ pub struct KeycloakInfo {
 }
 
 impl KeycloakInfo {
+    #[cfg(feature = "ssr")]
     pub fn from_env() -> Self {
         let url = env::var("KEYCLOAK_URL").expect("env KEYCLOAK_URL not found");
         let realm_name =
@@ -55,7 +55,8 @@ pub fn LoginButton() -> impl IntoView {
             .unwrap_or_default()
     });
     view! {
-        <a href=move || login_url.get()>
+        <a class="text-xl"
+            href=move || login_url.get()>
             "Log in"
         </a>
     }
@@ -69,7 +70,6 @@ pub fn InitAuth(children: ChildrenFn) -> impl IntoView {
             {Suspend::new(async move {
                 let info = keycloak_info.await;
                 provide_context(info.clone());
-                info!("Initializing Keycloak auth... {}", info.url);
                 let _auth = init_keycloak_auth(UseKeycloakAuthOptions {
                     keycloak_server_url: Url::parse(&info.url).unwrap(),
                     realm: info.realm_name.clone(),
@@ -102,7 +102,6 @@ pub fn Protected(children: ChildrenFn) -> impl IntoView {
 
 #[component]
 pub fn Logout() -> impl IntoView {
-    info!("should be logging out");
     view! {
         <Protected>
             <EndSession and_route_to="http://localhost:3000"/>
@@ -111,10 +110,9 @@ pub fn Logout() -> impl IntoView {
 }
 #[component]
 pub fn UserNavBar() -> impl IntoView {
-    info!("user nav page");
     let auth = expect_keycloak_auth();
     view! {
-        <button  on:click=move |_| auth.end_session()>
+        <button on:click=move |_| auth.end_session()>
             "Logout"
         </button>
     }

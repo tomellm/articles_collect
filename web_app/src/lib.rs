@@ -6,6 +6,7 @@ pub mod edit;
 pub mod keycloak;
 pub mod model;
 pub mod routes;
+pub mod utils;
 
 #[cfg(feature = "ssr")]
 #[derive(Debug, Clone)]
@@ -27,7 +28,7 @@ pub fn hydrate() {
     console_error_panic_hook::set_once();
     tracing_wasm::set_as_global_default_with_config(
         tracing_wasm::WASMLayerConfigBuilder::default()
-            .set_max_level(tracing::Level::TRACE)
+            .set_max_level(tracing::Level::INFO)
             .build(),
     );
 

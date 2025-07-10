@@ -3,7 +3,6 @@ use leptos_router::{
     components::{Outlet, ParentRoute, Route, Routes},
     path,
 };
-use tracing::info;
 
 use crate::{
     app::HomePage,
@@ -12,7 +11,6 @@ use crate::{
 };
 
 pub fn routes() -> impl IntoView {
-    info!("routes");
     view! {
         <Routes fallback=FallbackRoute>
             <ParentRoute path=path!("") view=InitAuthParent>

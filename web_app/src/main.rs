@@ -1,14 +1,14 @@
 #![allow(non_snake_case)]
 
 #[cfg(feature = "ssr")]
+use sea_orm::{DatabaseConnection, DbErr};
+
+#[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    use std::env;
-
     use axum::Router;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use migration::{Migrator, MigratorTrait};
     use tracing::info;
     use tracing_subscriber::prelude::*;
     use web_app::{app::*, ServerState};
@@ -34,10 +34,7 @@ async fn main() {
         .with(fmt_layer_filtered)
         .init();
 
-    let connection = sea_orm::Database::connect(&env::var("DATABASE_URL").unwrap())
-        .await
-        .unwrap();
-    Migrator::up(&connection, None).await.unwrap();
+    let connection = setup_database().await.unwrap();
 
     let conf = get_configuration(None).unwrap();
     let addr = conf.leptos_options.site_addr;
@@ -67,6 +64,21 @@ async fn main() {
     axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
+}
+
+#[cfg(feature = "ssr")]
+async fn setup_database() -> Result<DatabaseConnection, DbErr> {
+    use std::env;
+
+    use migration::{Migrator, MigratorTrait};
+    let connection = sea_orm::Database::connect(&env::var("DATABASE_URL").unwrap())
+        .await
+        .unwrap();
+
+    let pending_migrations = Migrator::get_pending_migrations(&connection).await?;
+    Migrator::up(&connection, Some(pending_migrations.len() as u32)).await?;
+
+    Ok(connection)
 }
 
 #[cfg(not(feature = "ssr"))]

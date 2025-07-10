@@ -29,3 +29,37 @@ impl From<Article> for Model {
         Model { uuid, title, url }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use domain::articles::Article;
+    use uuid::Uuid;
+
+    use crate::entities::articles::Model;
+
+    #[test]
+    fn articles_model_from_from_causes_no_change() {
+        let art = basic_article();
+        let converted = Article::from(Model::from(art.clone()));
+        assert_eq!(art, converted);
+    }
+
+    #[test]
+    fn model_articles_from_from_causes_no_change() {
+        let art = basic_model();
+        let converted = Model::from(Article::from(art.clone()));
+        assert_eq!(art, converted);
+    }
+
+    fn basic_model() -> Model {
+        Model {
+            uuid: Uuid::new_v4(),
+            title: String::from("title"),
+            url: String::from("url"),
+        }
+    }
+
+    fn basic_article() -> Article {
+        Article::from_parts(String::from("title"), String::from("url"))
+    }
+}
