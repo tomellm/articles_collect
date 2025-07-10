@@ -1,0 +1,10 @@
+[package]
+name = "database"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+domain = { path = "../../domain" }
+
+uuid = { workspace = true, features = ["js", "serde", "v4"] }
+sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }

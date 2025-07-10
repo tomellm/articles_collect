@@ -1,0 +1,73 @@
+[package]
+name = "web_app"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+domain = { path = "../projects/domain" }
+database = { path = "../projects/server/database", optional = true }
+migration = { path = "../migration", optional = true }
+
+dotenv = { version = "0.15.0", optional = true }
+uuid = { workspace = true, features = ["js", "serde", "v4"] }
+
+leptos = { version = "0.8.2", features = ["nightly"] }
+leptos_router = { version = "0.8.2", features = ["nightly"] }
+leptos_axum = { version = "0.8.2", optional = true }
+leptos_meta = { version = "0.8.2" }
+
+axum = { version = "0.8", optional = true }
+tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
+serde = { workspace = true, features = ["derive"] }
+
+console_error_panic_hook = { version = "0.1", optional = true}
+wasm-bindgen = { version = "=0.2.100", optional = true }
+leptos-keycloak-auth = { version = "0.7.0", features = ["internals"] }
+
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", optional = true }
+tracing-wasm = { version = "0.2.1", optional = true }
+
+getrandom = { version = "0.3.3", features = ["wasm_js"], optional = true }
+# headless_chrome = { version = "1.0.17", optional = true }
+sea-orm = { workspace = true, optional = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+
+# leptos-keycloak-auth = { path = "/Users/tomellm/Documents/coding-projects/X_source_codes/leptos-keycloak-auth", features = ["ssr"] }
+# getrandom = { version = "0.2.15", default-features = false, features = [
+#     "wasm_js",
+# ] }
+
+[features]
+hydrate = [
+    "dep:tracing-wasm",
+    "dep:getrandom",
+    "dep:console_error_panic_hook",
+    "dep:wasm-bindgen",
+    "leptos/hydrate",
+]
+ssr = [
+    "dep:dotenv",
+    "dep:axum",
+    "dep:tokio",
+    "dep:leptos_axum",
+    "dep:tracing-subscriber",
+    # "dep:headless_chrome",
+    "dep:sea-orm",
+    "dep:migration",
+    "dep:database",
+    "leptos/ssr",
+    "leptos_meta/ssr",
+    "leptos_router/ssr",
+    "leptos-keycloak-auth/ssr",
+]
+
+# Defines a size-optimized profile for the WASM bundle in release mode
+[profile.wasm-release]
+inherits = "release"
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
