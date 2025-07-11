@@ -9,11 +9,13 @@ async fn main() {
     use axum::Router;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use tracing::info;
+    use tracing::{info, warn};
     use tracing_subscriber::prelude::*;
     use web_app::{app::*, ServerState};
 
-    dotenv::dotenv().expect("could not load env variables");
+    if let Err(err) = dotenv::dotenv() {
+        warn!("loading .env file failed: {err}");
+    }
 
     let log_filter = tracing_subscriber::filter::Targets::new()
         .with_default(tracing::Level::INFO)
