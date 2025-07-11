@@ -12,6 +12,14 @@ uuid = "1.17.0"
 serde = "1.0.219"
 sea-orm = "1.1.13"
 
+# Defines a size-optimized profile for the WASM bundle in release mode
+[profile.wasm-release]
+inherits = "release"
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
+
 [[workspace.metadata.leptos]]
 # project name
 name = "articles_collect"
