@@ -2,7 +2,8 @@
 FROM rustlang/rust:nightly-alpine as builder
 
 RUN apk update && \
-    apk add --no-cache bash curl npm libc-dev binaryen
+    apk add --no-cache bash curl npm libc-dev binaryen \
+    clang pkgconf openssl-dev libpq libgcrypt openssl-libs-static
 
 RUN npm install -g sass
 
@@ -20,7 +21,7 @@ FROM rustlang/rust:nightly-alpine as runner
 
 WORKDIR /app
 
-COPY --from=builder /work/target/release/articles_collect /app/
+COPY --from=builder /work/target/release/web_app /app/
 COPY --from=builder /work/target/site /app/site
 COPY --from=builder /work/Cargo.toml /app/
 
