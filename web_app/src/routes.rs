@@ -10,18 +10,6 @@ use crate::{
     keycloak::{InitAuth, Logout},
 };
 
-pub fn routes() -> impl IntoView {
-    view! {
-        <Routes fallback=FallbackRoute>
-            <ParentRoute path=path!("") view=InitAuthParent>
-                <Route path=path!("") view=HomePage />
-                <Route path=path!("edit") view=EditArticles />
-                <Route path=path!("logout") view=Logout />
-            </ParentRoute>
-        </Routes>
-    }
-}
-
 #[component]
 pub fn InitAuthParent() -> impl IntoView {
     view! {

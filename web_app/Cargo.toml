@@ -18,10 +18,12 @@ leptos = { version = "0.8.2", features = ["nightly"] }
 leptos_router = { version = "0.8.2", features = ["nightly"] }
 leptos_axum = { version = "0.8.2", optional = true }
 leptos_meta = { version = "0.8.2" }
+leptos-use = "0.16.2"
 
 axum = { version = "0.8", optional = true }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 serde = { workspace = true, features = ["derive"] }
+axum-keycloak-auth = { version = "0.8.3", optional = true }
 
 console_error_panic_hook = { version = "0.1", optional = true}
 wasm-bindgen = { version = "=0.2.100", optional = true }
@@ -58,8 +60,10 @@ ssr = [
     "dep:sea-orm",
     "dep:migration",
     "dep:database",
+    "dep:axum-keycloak-auth",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
-    "leptos-keycloak-auth/ssr",
+    "leptos-use/ssr",
+    "leptos-keycloak-auth/ssr"
 ]

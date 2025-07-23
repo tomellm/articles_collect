@@ -1,6 +1,10 @@
 #![allow(non_snake_case)]
 
 #[cfg(feature = "ssr")]
+use axum_keycloak_auth::{
+    decode::ProfileAndEmail, instance::KeycloakAuthInstance, layer::KeycloakAuthLayer,
+};
+#[cfg(feature = "ssr")]
 use sea_orm::{DatabaseConnection, DbErr};
 
 #[cfg(feature = "ssr")]
@@ -9,6 +13,7 @@ async fn main() {
     use axum::Router;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
+    use leptos_keycloak_auth::to_current_url;
     use tracing::{info, warn};
     use tracing_subscriber::prelude::*;
     use web_app::{app::*, ServerState};
@@ -20,7 +25,8 @@ async fn main() {
     let log_filter = tracing_subscriber::filter::Targets::new()
         .with_default(tracing::Level::INFO)
         .with_target("tokio", tracing::Level::WARN)
-        .with_target("runtime", tracing::Level::WARN);
+        .with_target("runtime", tracing::Level::WARN)
+        .with_target("sqlx::query", tracing::Level::WARN);
 
     let fmt_layer = tracing_subscriber::fmt::layer()
         .pretty()
@@ -56,6 +62,7 @@ async fn main() {
                 move || shell(leptos_options.clone())
             },
         )
+        .layer(setup_keycloak())
         .fallback(leptos_axum::file_and_error_handler(shell))
         .with_state(leptos_options);
 
@@ -81,6 +88,30 @@ async fn setup_database() -> Result<DatabaseConnection, DbErr> {
     Migrator::up(&connection, Some(pending_migrations.len() as u32)).await?;
 
     Ok(connection)
+}
+
+#[cfg(feature = "ssr")]
+fn setup_keycloak() -> KeycloakAuthLayer<String, ProfileAndEmail> {
+    use axum_keycloak_auth::{
+        instance::KeycloakConfig, layer::KeycloakAuthLayer, PassthroughMode, Url,
+    };
+    use web_app::keycloak::KeycloakInfo;
+
+    let keycloak_info = KeycloakInfo::from_env();
+
+    let instance = KeycloakAuthInstance::new(
+        KeycloakConfig::builder()
+            .server(Url::parse(keycloak_info.url.as_str()).unwrap())
+            .realm(keycloak_info.realm_name)
+            .build(),
+    );
+
+    KeycloakAuthLayer::<String>::builder()
+        .instance(instance)
+        .passthrough_mode(PassthroughMode::Pass)
+        .persist_raw_claims(false)
+        .expected_audiences(vec![])
+        .build()
 }
 
 #[cfg(not(feature = "ssr"))]
