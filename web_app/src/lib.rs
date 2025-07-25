@@ -2,9 +2,8 @@
 use sea_orm::DatabaseConnection;
 
 pub mod app;
-pub mod edit;
+pub mod articles;
 pub mod keycloak;
-pub mod model;
 pub mod routes;
 pub mod utils;
 

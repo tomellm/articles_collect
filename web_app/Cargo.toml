@@ -27,25 +27,18 @@ axum-keycloak-auth = { version = "0.8.3", optional = true }
 
 console_error_panic_hook = { version = "0.1", optional = true}
 wasm-bindgen = { version = "=0.2.100", optional = true }
-leptos-keycloak-auth = { version = "0.7.0", features = ["internals"] }
+leptos_oidc = "0.9.0" # https://gitlab.com/kerkmann/leptos_oidc/-/tree/main
 
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", optional = true }
 tracing-wasm = { version = "0.2.1", optional = true }
 
-getrandom = { version = "0.3.3", features = ["wasm_js"], optional = true }
 # headless_chrome = { version = "1.0.17", optional = true }
 sea-orm = { workspace = true, optional = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
-
-# leptos-keycloak-auth = { path = "/Users/tomellm/Documents/coding-projects/X_source_codes/leptos-keycloak-auth", features = ["ssr"] }
-# getrandom = { version = "0.2.15", default-features = false, features = [
-#     "wasm_js",
-# ] }
 
 [features]
 hydrate = [
     "dep:tracing-wasm",
-    "dep:getrandom",
     "dep:console_error_panic_hook",
     "dep:wasm-bindgen",
     "leptos/hydrate",
@@ -64,6 +57,5 @@ ssr = [
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
-    "leptos-use/ssr",
-    "leptos-keycloak-auth/ssr"
+    "leptos-use/ssr"
 ]

@@ -13,7 +13,6 @@ async fn main() {
     use axum::Router;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, LeptosRoutes};
-    use leptos_keycloak_auth::to_current_url;
     use tracing::{info, warn};
     use tracing_subscriber::prelude::*;
     use web_app::{app::*, ServerState};

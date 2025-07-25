@@ -1,18 +1,13 @@
-use std::{env, str::FromStr};
+use std::env;
 
 use leptos::prelude::*;
-use leptos_keycloak_auth::{
-    components::{EndSession, ShowWhenAuthenticated},
-    expect_keycloak_auth, init_keycloak_auth, to_current_url,
-    url::Url,
-    UseKeycloakAuthOptions, ValidationOptions,
-};
+use leptos_oidc::{Auth, AuthParameters, AuthSignal, Challenge, LoginLink, LogoutLink};
+use leptos_router::components::A;
 use serde::{Deserialize, Serialize};
-use tracing::info;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KeycloakInfo {
-    pub app_url: Url,
+    pub app_url: String,
     pub url: String,
     pub realm_name: String,
     pub client_id: String,
@@ -20,7 +15,7 @@ pub struct KeycloakInfo {
 
 impl KeycloakInfo {
     pub fn from_env() -> Self {
-        let app_url = Url::from_str(&env::var("APP_URL").expect("env APP_URL not found")).unwrap();
+        let app_url = env::var("APP_URL").expect("env APP_URL not found");
         let url = env::var("KEYCLOAK_URL").expect("env KEYCLOAK_URL not found");
         let realm_name =
             env::var("KEYCLOAK_REALM_NAME").expect("env KEYCLOAK_REALM_NAME not found");
@@ -49,60 +44,94 @@ pub fn Login() -> impl IntoView {
 
 #[component]
 pub fn LoginButton() -> impl IntoView {
-    info!("rendering login button");
-    let auth = expect_keycloak_auth();
-    let login_url_unavailable = Signal::derive(move || auth.login_url.get().is_none());
-    let login_url = Signal::derive(move || {
-        auth.login_url
-            .get()
-            .map(|url| url.to_string())
-            .unwrap_or_default()
-    });
     view! {
-        <a href=move || login_url.get() class="text-xl"
-            aria_disabled=login_url_unavailable>
-            "Log in"
-        </a>
+        <LoginLink class="text-login">Sign in</LoginLink>
     }
 }
 
 #[component]
 pub fn InitAuth(children: ChildrenFn) -> impl IntoView {
     let info = SharedValue::new(KeycloakInfo::from_env).into_inner();
-    let _auth = init_keycloak_auth(UseKeycloakAuthOptions {
-        keycloak_server_url: Url::parse(&info.url).unwrap(),
-        realm: info.realm_name.clone(),
-        client_id: info.client_id.clone(),
-        post_login_redirect_url: info.app_url.clone(),
-        post_logout_redirect_url: info.app_url.clone(),
-        scope: vec![],
-        id_token_validation: ValidationOptions {
-            expected_audiences: Some(vec![info.client_id]),
-            expected_issuers: Some(vec![format!("{}/realms/{}", info.url, info.realm_name)]),
-        },
-        delay_during_hydration: true,
-        advanced: Default::default(),
-    });
+    let parameters = AuthParameters {
+        issuer: format!("{}/realms/{}", info.url, info.realm_name),
+        client_id: info.client_id,
+        redirect_uri: info.app_url.clone(),
+        post_logout_redirect_uri: info.app_url,
+        challenge: Challenge::S256,
+        scope: None,
+        audience: None,
+    };
+
+    let auth: AuthSignal = Auth::signal();
+    provide_context(auth);
+
+    let loading_auth = Auth::init(parameters);
+    provide_context(loading_auth);
+
     children()
 }
 
 #[component]
-pub fn Protected(children: ChildrenFn) -> impl IntoView {
+pub fn AuthErrorPage() -> impl IntoView {
+    let auth =
+        use_context::<AuthSignal>().expect("AuthErrorContext: RwSignal<AuthStore> not present");
+    let error_message = move || auth.get().error().map(|error| format!("{error:?}"));
+
     view! {
-        <ShowWhenAuthenticated fallback=|| view! { <Login/> }>
-            { children() }
-        </ShowWhenAuthenticated>
+        <h1>Error occurred</h1>
+        <p>There was an error in the authentication process!</p>
+        { error_message }
     }
-    //<DebugState/>
 }
 
 #[component]
 pub fn Logout() -> impl IntoView {
-    let auth = expect_keycloak_auth();
     view! {
-        <button on:click=move |_| auth.end_session()
-            class="text-xl">
-            "Logout"
-        </button>
+        <LogoutLink class="text-logout">Sign out</LogoutLink>
+    }
+}
+
+#[component]
+pub fn ShowWhenAuthenticated(
+    children: ChildrenFn,
+    #[prop(optional, into)] fallback: ViewFn,
+) -> impl IntoView {
+    let auth = expect_context::<AuthSignal>();
+
+    view! {
+        <Show
+            when=move || auth.get().is_authenticated()
+            fallback>
+            { children() }
+        </Show>
+    }
+}
+
+#[component]
+pub fn ExpectAuth(children: ChildrenFn) -> impl IntoView {
+    let auth = expect_context::<AuthSignal>();
+
+    view! {
+        { move || match auth.get() {
+            Auth::Authenticated(_) => children().into_any(),
+            Auth::Loading => view!{
+                <div class="w-full h-full flex justify-center items-center flex-col">
+                    "loading..."
+                </div>
+            }.into_any(),
+            Auth::Unauthenticated(_) => view!{
+                <div class="w-full h-full flex justify-center items-center gap-2 flex-col">
+                    "Unauthorized!"
+                    <LoginButton />
+                </div>
+            }.into_any(),
+            Auth::Error(auth_error) => view! {
+                <div class="w-full h-full flex justify-center items-center gap-2 flex-col">
+                    <h1>"Authorization Error"</h1>
+                    <p>{ auth_error.to_string() }</p>
+                    <A href="/">"back to the HomePage"</A>
+                </div>
+            }.into_any(),
+        }}
     }
 }

@@ -4,14 +4,13 @@ use std::sync::Arc;
 use axum_keycloak_auth::decode::KeycloakToken;
 use leptos::prelude::*;
 use tracing::info;
-use uuid::Uuid;
 
 #[component]
 pub fn CenterColumn(children: ChildrenFn) -> impl IntoView {
     view! {
         <div class="flex justify-center">
             <div class="xl:max-w-[1000px] w-full bg-white border-x-2">
-                <div class="pt-20">
+                <div class="pt-25">
                     {children()}
                 </div>
             </div>
@@ -36,7 +35,6 @@ pub fn Button(children: ChildrenFn) -> impl IntoView {
 /// meaning that every time the Dialog is opend this can be different
 #[derive(Clone)]
 pub struct DialogState {
-    current_user: Uuid,
     yes_text: String,
     yes_action: Arc<dyn Fn() + Send + Sync + 'static>,
     no_text: String,
@@ -51,7 +49,6 @@ impl DialogState {
         YFn: Fn() + Send + Sync + 'static,
     {
         Self {
-            current_user: Uuid::new_v4(),
             yes_text: String::from("yes"),
             yes_action: Arc::new(yes_action),
             no_text: String::from("no"),
@@ -67,7 +64,6 @@ impl DialogState {
         NFn: Fn() + Send + Sync + 'static,
     {
         Self {
-            current_user: Uuid::new_v4(),
             yes_text: String::from("yes"),
             yes_action: Arc::new(yes_action),
             no_text: String::from("no"),
@@ -79,7 +75,6 @@ impl DialogState {
 
     pub fn debug() -> Self {
         Self {
-            current_user: Uuid::new_v4(),
             yes_text: String::from("yes"),
             yes_action: Arc::new(|| ()),
             no_text: String::from("no"),

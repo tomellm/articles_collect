@@ -1,6 +1,6 @@
 use leptos::prelude::*;
-use leptos_keycloak_auth::{components::ShowWhenAuthenticated, expect_keycloak_auth};
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
+use leptos_oidc::AuthSignal;
 use leptos_router::{
     components::{Route, Router, Routes, A},
     path,
@@ -8,10 +8,9 @@ use leptos_router::{
 use tracing::info;
 
 use crate::{
-    edit::EditArticles,
-    keycloak::{InitAuth, KeycloakInfo, LoginButton, Logout},
-    model::article::ArticlesList,
-    routes::{self, FallbackRoute},
+    articles::{edit::EditArticles, list::ArticlesList},
+    keycloak::{InitAuth, KeycloakInfo, LoginButton, Logout, ShowWhenAuthenticated},
+    routes::FallbackRoute,
     utils::{Button, CenterColumn, DialogSignal},
 };
 
@@ -35,7 +34,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
 
 #[component]
 pub fn App() -> impl IntoView {
-    let keycloak_info = SharedValue::new(KeycloakInfo::from_env);
+    let _keycloak_info = SharedValue::new(KeycloakInfo::from_env);
 
     // Provides context that manages stylesheets, titles, meta tags, etc.
     provide_meta_context();
@@ -60,8 +59,8 @@ pub fn App() -> impl IntoView {
                 <InitAuth>
                     <GlobalNavBar />
                     <Routes fallback=FallbackRoute>
-                        <Route path=path!("") view=HomePage />
-                        <Route path=path!("edit") view=EditArticles />
+                        <Route path=path!("/") view=HomePage />
+                        <Route path=path!("/edit") view=EditArticles />
                     </Routes>
                 </InitAuth>
             </Router>
@@ -83,8 +82,9 @@ pub fn HomePage() -> impl IntoView {
 fn GlobalNavBar() -> impl IntoView {
     let nav_open = RwSignal::new(false);
 
-    let auth = expect_keycloak_auth();
-    info!("{:?}", auth.state.get());
+    let auth = expect_context::<AuthSignal>();
+
+    info!("{:?}", auth.get());
     view! {
         <div class="fixed top-0 left-0 z-10 w-screen"
             class:h-screen=move || nav_open.get()>
@@ -110,7 +110,7 @@ fn GlobalNavBar() -> impl IntoView {
                     class:block=move || nav_open.get()>
                     <ShowWhenAuthenticated fallback=|| view!{<LoginButton />}>
                         <div>
-                            <A href="/edit">
+                            <A href="/edit" on:click=move |_| nav_open.set(false)>
                                 "Add Articles"
                             </A>
                             <Logout />
