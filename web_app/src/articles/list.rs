@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     articles::delete::open_delete_dialog_action,
-    keycloak::{AuthClient, ShowWhenAuthenticated},
+    keycloak::ShowWhenAuthenticated,
     utils::{Button, DialogSignal},
 };
 

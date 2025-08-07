@@ -5,7 +5,6 @@ use crate::{
     keycloak::{AuthClient, ExpectAuth},
     utils::{Button, CenterColumn},
 };
-use tracing::info;
 
 #[component]
 pub fn EditArticles() -> impl IntoView {

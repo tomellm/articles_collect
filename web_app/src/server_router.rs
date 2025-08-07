@@ -2,8 +2,8 @@ use std::{sync::Arc, time::Duration};
 
 use axum::{
     error_handling::HandleErrorLayer,
-    extract::{MatchedPath, Path, State},
-    http::{Method, Request, StatusCode, Uri},
+    extract::{Path, State},
+    http::{Request, StatusCode, Uri},
     response::IntoResponse,
     routing::{get, IntoMakeService},
     BoxError, Router,
@@ -12,14 +12,12 @@ use axum_keycloak_auth::{
     decode::ProfileAndEmail, instance::KeycloakAuthInstance, layer::KeycloakAuthLayer,
 };
 use axum_keycloak_auth::{
-    extract::{AuthHeaderTokenExtractor, QueryParamTokenExtractor, TokenExtractor},
+    extract::{AuthHeaderTokenExtractor, TokenExtractor},
     instance::KeycloakConfig,
     NonEmpty, PassthroughMode, Url,
 };
 use leptos::{config::LeptosOptions, error::Errors, prelude::*, view};
-use leptos_axum::{
-    generate_route_list, handle_server_fns_with_context, AxumRouteListing, LeptosRoutes,
-};
+use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
 use sea_orm::{DatabaseConnection, DbErr};
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{
