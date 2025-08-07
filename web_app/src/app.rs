@@ -1,11 +1,9 @@
 use leptos::prelude::*;
 use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
-use leptos_oidc::AuthSignal;
 use leptos_router::{
     components::{Route, Router, Routes, A},
     path,
 };
-use tracing::info;
 
 use crate::{
     articles::{edit::EditArticles, list::ArticlesList},
@@ -82,9 +80,6 @@ pub fn HomePage() -> impl IntoView {
 fn GlobalNavBar() -> impl IntoView {
     let nav_open = RwSignal::new(false);
 
-    let auth = expect_context::<AuthSignal>();
-
-    info!("{:?}", auth.get());
     view! {
         <div class="fixed top-0 left-0 z-10 w-screen"
             class:h-screen=move || nav_open.get()>
@@ -93,7 +88,9 @@ fn GlobalNavBar() -> impl IntoView {
                 class:flex-col=move || nav_open.get()
                 class:h-screen=move || nav_open.get()>
                 <div class="flex justify-between w-full h-20 items-center">
-                    <h1 class="text-3xl">"Articles Collect"</h1>
+                    <A href="/">
+                      <h1 class="text-3xl">"Articles Collect"</h1>
+                    </A>
                     <button
                           on:click=move |_| nav_open.set(!nav_open.get())>
                         <Button>
@@ -105,11 +102,11 @@ fn GlobalNavBar() -> impl IntoView {
                     </button>
                 </div>
 
-                <div class="flex flex-col"
+                <div class="flex flex-col items-center gap-2"
                     class:hidden=move || !nav_open.get()
                     class:block=move || nav_open.get()>
                     <ShowWhenAuthenticated fallback=|| view!{<LoginButton />}>
-                        <div>
+                        <div class="flex flex-col items-center gap-2">
                             <A href="/edit" on:click=move |_| nav_open.set(false)>
                                 "Add Articles"
                             </A>

@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     articles::delete::open_delete_dialog_action,
-    keycloak::ShowWhenAuthenticated,
+    keycloak::{AuthClient, ShowWhenAuthenticated},
     utils::{Button, DialogSignal},
 };
 
@@ -56,7 +56,7 @@ fn ArticleInList(article: Article, open_delete_dialog: Action<Uuid, ()>) -> impl
     }
 }
 
-#[server]
+#[server(prefix = "/public/api")]
 async fn get_articles() -> Result<Vec<Article>, ServerFnError> {
     use crate::ServerState;
     use database::articles_query;

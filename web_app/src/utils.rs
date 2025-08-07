@@ -1,16 +1,13 @@
 use std::sync::Arc;
 
-#[cfg(feature = "ssr")]
-use axum_keycloak_auth::decode::KeycloakToken;
 use leptos::prelude::*;
-use tracing::info;
 
 #[component]
 pub fn CenterColumn(children: ChildrenFn) -> impl IntoView {
     view! {
         <div class="flex justify-center">
             <div class="xl:max-w-[1000px] w-full bg-white border-x-2">
-                <div class="pt-25">
+                <div class="pt-25 min-h-screen">
                     {children()}
                 </div>
             </div>
@@ -24,8 +21,7 @@ pub fn Button(children: ChildrenFn) -> impl IntoView {
         <div class="flex justify-content items-center border-2 py-1 px-2
             hover:bg-black hover:text-white bg-white
             hover:border-l-gray-200 hover:border-b-gray-200
-            hover:border-t-gray-950 hover:border-r-gray-950
-            ">
+            hover:border-t-gray-950 hover:border-r-gray-950">
             { children() }
         </div>
     }
@@ -108,7 +104,6 @@ impl DialogSignal {
     }
 
     pub fn close(&self) {
-        info!("closing dialog");
         self.0.set(None);
     }
 
@@ -155,13 +150,4 @@ impl DialogSignal {
             (state.no_action)();
         }
     }
-}
-
-#[cfg(feature = "ssr")]
-pub async fn keycloak_token() -> Result<KeycloakToken<String>, ServerFnError> {
-    use axum::Extension;
-    use axum_keycloak_auth::decode::KeycloakToken;
-    use leptos_axum::extract;
-
-    Ok(extract::<Extension<KeycloakToken<String>>>().await?.0)
 }

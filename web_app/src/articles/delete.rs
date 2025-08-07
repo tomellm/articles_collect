@@ -2,7 +2,10 @@ use domain::articles::Article;
 use leptos::{prelude::*, server};
 use uuid::Uuid;
 
-use crate::utils::{DialogSignal, DialogState};
+use crate::{
+    keycloak::AuthClient,
+    utils::{DialogSignal, DialogState},
+};
 
 pub fn open_delete_dialog_action(
     dialog: DialogSignal,
@@ -37,7 +40,9 @@ fn delete_action(articles: RwSignal<Vec<Article>>) -> Action<Uuid, ()> {
     })
 }
 
-#[server]
+#[server(
+    client = AuthClient
+)]
 async fn delete_article(article_uuid: Uuid) -> Result<(), ServerFnError> {
     use crate::ServerState;
     use database::articles_query;

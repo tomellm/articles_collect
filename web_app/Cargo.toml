@@ -20,10 +20,12 @@ leptos_axum = { version = "0.8.2", optional = true }
 leptos_meta = { version = "0.8.2" }
 leptos-use = "0.16.2"
 
-axum = { version = "0.8", optional = true }
+axum = { version = "0.8", optional = true, features = ["macros"] }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 serde = { workspace = true, features = ["derive"] }
 axum-keycloak-auth = { version = "0.8.3", optional = true }
+tower = { version = "0.5.2", optional = true }
+tower-http = { version = "0.6.6", features = ["fs", "trace"], optional = true }
 
 console_error_panic_hook = { version = "0.1", optional = true}
 wasm-bindgen = { version = "=0.2.100", optional = true }
@@ -35,6 +37,8 @@ tracing-wasm = { version = "0.2.1", optional = true }
 
 # headless_chrome = { version = "1.0.17", optional = true }
 sea-orm = { workspace = true, optional = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+anyhow = "1.0.98"
+futures = "0.3.31"
 
 [features]
 hydrate = [
@@ -54,6 +58,8 @@ ssr = [
     "dep:migration",
     "dep:database",
     "dep:axum-keycloak-auth",
+    "dep:tower",
+    "dep:tower-http",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",

@@ -2,7 +2,7 @@ use domain::articles::Article;
 use leptos::{form::MultiActionForm, prelude::*, server::ServerMultiAction};
 
 use crate::{
-    keycloak::ExpectAuth,
+    keycloak::{AuthClient, ExpectAuth},
     utils::{Button, CenterColumn},
 };
 use tracing::info;
@@ -13,36 +13,33 @@ pub fn EditArticles() -> impl IntoView {
 
     view! {
         <CenterColumn>
-            <div class="min-w-200 min-h-screen">
-                <ExpectAuth>
-                    <MultiActionForm action=add_articles>
-                        <div class="flex flex-col gap-2 p-2">
-                            <div class="flex justify-between">
-                                <label class="underline">
-                                    "Upload List of Articles"
-                                </label>
-                                <Button>
-                                    <input type="submit" value="Send"/>
-                                </Button>
-                            </div>
-                            <textarea name="file_contents"
-                                class="field-sizing-content h-100 border-1 border-gray-200">
-                            </textarea>
+            <ExpectAuth>
+                <MultiActionForm action=add_articles>
+                    <div class="flex flex-col gap-2 p-2">
+                        <div class="flex justify-between">
+                            <label class="underline">
+                                "Upload List of Articles"
+                            </label>
+                            <Button>
+                                <input type="submit" value="Send"/>
+                            </Button>
                         </div>
-                    </MultiActionForm>
-                </ExpectAuth>
-            </div>
+                        <textarea name="file_contents"
+                            class="field-sizing-content h-100 border-1 border-gray-200">
+                        </textarea>
+                    </div>
+                </MultiActionForm>
+            </ExpectAuth>
         </CenterColumn>
     }
 }
 
-#[server]
+#[server(
+    client = AuthClient
+)]
 async fn add_articles(file_contents: String) -> Result<(), ServerFnError> {
-    use crate::{utils::keycloak_token, ServerState};
+    use crate::ServerState;
     use database::articles_query;
-
-    let ext_token = keycloak_token().await?;
-    info!("{ext_token:?}");
 
     if file_contents.is_empty() {
         return Ok(());

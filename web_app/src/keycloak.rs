@@ -1,9 +1,21 @@
 use std::env;
 
-use leptos::prelude::*;
+#[cfg(feature = "ssr")]
+use axum_keycloak_auth::decode::KeycloakToken;
+use futures::{Sink, Stream};
+use leptos::{
+    prelude::*,
+    server_fn::{
+        client::{browser::BrowserClient, Client},
+        request::browser::BrowserRequest,
+        response::browser::BrowserResponse,
+    },
+    wasm_bindgen::UnwrapThrowExt,
+};
 use leptos_oidc::{Auth, AuthParameters, AuthSignal, Challenge, LoginLink, LogoutLink};
 use leptos_router::components::A;
 use serde::{Deserialize, Serialize};
+use tracing::{error, info};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KeycloakInfo {
@@ -133,5 +145,68 @@ pub fn ExpectAuth(children: ChildrenFn) -> impl IntoView {
                 </div>
             }.into_any(),
         }}
+    }
+}
+
+#[cfg(feature = "ssr")]
+pub async fn keycloak_token() -> Result<KeycloakToken<String>, ServerFnError> {
+    use axum::Extension;
+    use axum_keycloak_auth::decode::KeycloakToken;
+    use leptos_axum::extract;
+    use tracing::error;
+
+    let Extension(token) = extract::<Extension<KeycloakToken<String>>>()
+        .await
+        .map_err(|err| {
+            error!("error getting keycloak auth token: {err}");
+            err
+        })?;
+
+    Ok(token)
+}
+
+pub struct AuthClient;
+
+impl<E, IS, OS> Client<E, IS, OS> for AuthClient
+where
+    E: FromServerFnError,
+    IS: FromServerFnError,
+    OS: FromServerFnError,
+{
+    type Request = BrowserRequest;
+    type Response = BrowserResponse;
+
+    fn send(
+        req: Self::Request,
+    ) -> impl std::prelude::rust_2024::Future<Output = Result<Self::Response, E>> + Send {
+        let headers = req.headers();
+        let auth = expect_context::<AuthSignal>()
+            .get()
+            .authenticated()
+            .expect_throw(&format!(
+                "You have to be authenticated to make a request to: {}",
+                req.url()
+            ))
+            .id_token();
+        headers.append("Authorization", &format!("Bearer {auth}"));
+        <BrowserClient as Client<E, IS, OS>>::send(req)
+    }
+
+    fn open_websocket(
+        path: &str,
+    ) -> impl std::prelude::rust_2024::Future<
+        Output = Result<
+            (
+                impl Stream<Item = Result<server_fn::Bytes, server_fn::Bytes>> + Send + 'static,
+                impl Sink<server_fn::Bytes> + Send + 'static,
+            ),
+            E,
+        >,
+    > + Send {
+        <BrowserClient as Client<E, IS, OS>>::open_websocket(path)
+    }
+
+    fn spawn(future: impl std::prelude::rust_2024::Future<Output = ()> + Send + 'static) {
+        <BrowserClient as Client<E, IS, OS>>::spawn(future)
     }
 }
