@@ -1,5 +1,6 @@
 use domain::articles::Article;
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
+use uuid::Uuid;
 
 use crate::entities::articles;
 
@@ -22,6 +23,16 @@ where
         .map(|a| articles::Model::from(a).into_active_model());
 
     articles::Entity::insert_many(entities)
+        .exec(db)
+        .await
+        .map(|_| ())
+}
+
+pub async fn delete<C>(article_uuid: Uuid, db: &C) -> Result<(), DbErr>
+where
+    C: ConnectionTrait,
+{
+    articles::Entity::delete_by_id(article_uuid)
         .exec(db)
         .await
         .map(|_| ())

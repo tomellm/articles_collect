@@ -1,29 +1,42 @@
 use domain::articles::Article;
-use leptos::{component, prelude::*, server, view, IntoView};
+use leptos::{form::MultiActionForm, prelude::*, server::ServerMultiAction};
+
+use crate::{
+    keycloak::{AuthClient, ExpectAuth},
+    utils::{Button, CenterColumn},
+};
 
 #[component]
-pub fn ArticlesList(articles: Vec<Article>) -> impl IntoView {
+pub fn EditArticles() -> impl IntoView {
+    let add_articles = ServerMultiAction::<AddArticles>::new();
+
     view! {
-        <div class="flex flex-col gap-2">
-            <For each=move || articles.clone()
-                key=|state| state.url.clone()
-                let(article)
-            >
-                <div class="flex flex-col gap-1 p-2">
-                    <h3 class="text-xl">{ article.title }</h3>
-                    <a href=article.url target="_blank"
-                        class="text-blue-600"
-                    >
-                        { format!("[{}]", article.url) }
-                    </a>
-                </div>
-            </For>
-        </div>
+        <CenterColumn>
+            <ExpectAuth>
+                <MultiActionForm action=add_articles>
+                    <div class="flex flex-col gap-2 p-2">
+                        <div class="flex justify-between">
+                            <label class="underline">
+                                "Upload List of Articles"
+                            </label>
+                            <Button>
+                                <input type="submit" value="Send"/>
+                            </Button>
+                        </div>
+                        <textarea name="file_contents"
+                            class="field-sizing-content h-100 border-1 border-gray-200">
+                        </textarea>
+                    </div>
+                </MultiActionForm>
+            </ExpectAuth>
+        </CenterColumn>
     }
 }
 
-#[server]
-pub async fn add_articles(file_contents: String) -> Result<(), ServerFnError> {
+#[server(
+    client = AuthClient
+)]
+async fn add_articles(file_contents: String) -> Result<(), ServerFnError> {
     use crate::ServerState;
     use database::articles_query;
 
@@ -45,15 +58,7 @@ pub async fn add_articles(file_contents: String) -> Result<(), ServerFnError> {
     Ok(articles_query::insert_many(articles, &state.db).await?)
 }
 
-#[server]
-pub async fn get_articles() -> Result<Vec<Article>, ServerFnError> {
-    use crate::ServerState;
-    use database::articles_query;
-
-    let state = expect_context::<ServerState>();
-    Ok(articles_query::all(&state.db).await?)
-}
-
+#[cfg(any(feature = "ssr", test))]
 fn get_title_from_url(mut url: String) -> String {
     let url = if url.starts_with("https://") {
         let _ = url.drain(0..8);
@@ -76,7 +81,7 @@ fn get_title_from_url(mut url: String) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::model::article::get_title_from_url;
+    use super::*;
 
     #[test]
     fn get_title_from_url_https_ending_slash() {

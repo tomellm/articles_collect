@@ -1,23 +1,26 @@
 #[cfg(feature = "ssr")]
+use axum::extract::FromRef;
+use leptos::config::LeptosOptions;
+#[cfg(feature = "ssr")]
 use sea_orm::DatabaseConnection;
 
 pub mod app;
-pub mod edit;
+pub mod articles;
 pub mod keycloak;
-pub mod model;
 pub mod routes;
 pub mod utils;
 
 #[cfg(feature = "ssr")]
-#[derive(Debug, Clone)]
+#[derive(FromRef, Debug, Clone)]
 pub struct ServerState {
-    db: DatabaseConnection,
+    pub db: DatabaseConnection,
+    pub leptos_options: LeptosOptions,
 }
 
 #[cfg(feature = "ssr")]
 impl ServerState {
-    pub fn new(db: DatabaseConnection) -> Self {
-        Self { db }
+    pub fn new(db: DatabaseConnection, leptos_options: LeptosOptions) -> Self {
+        Self { db, leptos_options }
     }
 }
 
@@ -28,7 +31,7 @@ pub fn hydrate() {
     console_error_panic_hook::set_once();
     tracing_wasm::set_as_global_default_with_config(
         tracing_wasm::WASMLayerConfigBuilder::default()
-            .set_max_level(tracing::Level::INFO)
+            .set_max_level(tracing::Level::TRACE)
             .build(),
     );
 

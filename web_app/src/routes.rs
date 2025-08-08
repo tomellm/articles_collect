@@ -1,26 +1,7 @@
 use leptos::prelude::*;
-use leptos_router::{
-    components::{Outlet, ParentRoute, Route, Routes},
-    path,
-};
+use leptos_router::components::Outlet;
 
-use crate::{
-    app::HomePage,
-    edit::EditArticles,
-    keycloak::{InitAuth, Logout},
-};
-
-pub fn routes() -> impl IntoView {
-    view! {
-        <Routes fallback=FallbackRoute>
-            <ParentRoute path=path!("") view=InitAuthParent>
-                <Route path=path!("") view=HomePage />
-                <Route path=path!("edit") view=EditArticles />
-                <Route path=path!("logout") view=Logout />
-            </ParentRoute>
-        </Routes>
-    }
-}
+use crate::keycloak::InitAuth;
 
 #[component]
 pub fn InitAuthParent() -> impl IntoView {

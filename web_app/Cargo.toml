@@ -18,32 +18,31 @@ leptos = { version = "0.8.2", features = ["nightly"] }
 leptos_router = { version = "0.8.2", features = ["nightly"] }
 leptos_axum = { version = "0.8.2", optional = true }
 leptos_meta = { version = "0.8.2" }
+leptos-use = "0.16.2"
 
-axum = { version = "0.8", optional = true }
+axum = { version = "0.8", optional = true, features = ["macros"] }
 tokio = { version = "1", features = ["rt-multi-thread"], optional = true }
 serde = { workspace = true, features = ["derive"] }
+axum-keycloak-auth = { version = "0.8.3", optional = true }
+tower = { version = "0.5.2", optional = true }
+tower-http = { version = "0.6.6", features = ["fs", "trace"], optional = true }
 
 console_error_panic_hook = { version = "0.1", optional = true}
 wasm-bindgen = { version = "=0.2.100", optional = true }
-leptos-keycloak-auth = { version = "0.7.0", features = ["internals"] }
+leptos_oidc = "0.9.0" # https://gitlab.com/kerkmann/leptos_oidc/-/tree/main
 
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", optional = true }
 tracing-wasm = { version = "0.2.1", optional = true }
 
-getrandom = { version = "0.3.3", features = ["wasm_js"], optional = true }
 # headless_chrome = { version = "1.0.17", optional = true }
 sea-orm = { workspace = true, optional = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
-
-# leptos-keycloak-auth = { path = "/Users/tomellm/Documents/coding-projects/X_source_codes/leptos-keycloak-auth", features = ["ssr"] }
-# getrandom = { version = "0.2.15", default-features = false, features = [
-#     "wasm_js",
-# ] }
+anyhow = "1.0.98"
+futures = "0.3.31"
 
 [features]
 hydrate = [
     "dep:tracing-wasm",
-    "dep:getrandom",
     "dep:console_error_panic_hook",
     "dep:wasm-bindgen",
     "leptos/hydrate",
@@ -58,8 +57,11 @@ ssr = [
     "dep:sea-orm",
     "dep:migration",
     "dep:database",
+    "dep:axum-keycloak-auth",
+    "dep:tower",
+    "dep:tower-http",
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
-    "leptos-keycloak-auth/ssr",
+    "leptos-use/ssr"
 ]
