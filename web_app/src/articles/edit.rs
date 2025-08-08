@@ -58,7 +58,7 @@ async fn add_articles(file_contents: String) -> Result<(), ServerFnError> {
     Ok(articles_query::insert_many(articles, &state.db).await?)
 }
 
-#[cfg(feature = "ssr")]
+#[cfg(any(feature = "ssr", test))]
 fn get_title_from_url(mut url: String) -> String {
     let url = if url.starts_with("https://") {
         let _ = url.drain(0..8);
