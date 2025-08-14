@@ -9,7 +9,7 @@ use crate::{
 
 pub fn open_delete_dialog_action(
     dialog: DialogSignal,
-    articles: RwSignal<Vec<Article>>,
+    articles: RwSignal<Vec<RwSignal<Article>>>,
 ) -> Action<Uuid, ()> {
     let delete_action = delete_action(articles);
 
@@ -27,13 +27,13 @@ pub fn open_delete_dialog_action(
     })
 }
 
-fn delete_action(articles: RwSignal<Vec<Article>>) -> Action<Uuid, ()> {
+fn delete_action(articles: RwSignal<Vec<RwSignal<Article>>>) -> Action<Uuid, ()> {
     Action::new(move |uuid: &Uuid| {
         let uuid = *uuid;
         async move {
             if delete_article(uuid).await.is_ok() {
                 articles.update(move |articles| {
-                    let _ = articles.extract_if(.., |a| a.uuid.eq(&uuid)).count();
+                    let _ = articles.extract_if(.., |a| a.read().uuid.eq(&uuid)).count();
                 });
             }
         }

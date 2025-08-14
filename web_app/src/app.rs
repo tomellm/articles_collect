@@ -6,7 +6,7 @@ use leptos_router::{
 };
 
 use crate::{
-    articles::{edit::EditArticles, list::ArticlesList},
+    articles::{edit::EditArticles, list::ArticlesList, single::SingleArticle},
     keycloak::{InitAuth, KeycloakInfo, LoginButton, Logout, ShowWhenAuthenticated},
     routes::FallbackRoute,
     utils::{Button, CenterColumn, DialogSignal},
@@ -58,6 +58,8 @@ pub fn App() -> impl IntoView {
                     <GlobalNavBar />
                     <Routes fallback=FallbackRoute>
                         <Route path=path!("/") view=HomePage />
+                        <Route path=path!("/articles") view=HomePage />
+                        <Route path=path!("/articles/:uuid") view=SingleArticle />
                         <Route path=path!("/edit") view=EditArticles />
                     </Routes>
                 </InitAuth>
@@ -88,7 +90,7 @@ fn GlobalNavBar() -> impl IntoView {
                 class:flex-col=move || nav_open.get()
                 class:h-screen=move || nav_open.get()>
                 <div class="flex justify-between w-full h-20 items-center">
-                    <A href="/">
+                    <A href="/" on:click=move |_| nav_open.set(false)>
                       <h1 class="text-3xl">"Articles Collect"</h1>
                     </A>
                     <button

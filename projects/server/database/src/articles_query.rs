@@ -14,6 +14,16 @@ where
         .map(|art| art.into_iter().map(Into::into).collect())
 }
 
+pub async fn one<C>(db: &C, uuid: Uuid) -> Result<Option<Article>, DbErr>
+where
+    C: ConnectionTrait,
+{
+    articles::Entity::find_by_id(uuid)
+        .one(db)
+        .await
+        .map(|opt_art| opt_art.map(|art| art.into()))
+}
+
 pub async fn insert_many<C>(articles: Vec<Article>, db: &C) -> Result<(), DbErr>
 where
     C: ConnectionTrait,

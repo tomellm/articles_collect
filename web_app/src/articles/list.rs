@@ -1,9 +1,10 @@
 use domain::articles::Article;
 use leptos::{component, prelude::*, server, view, IntoView};
+use leptos_router::components::A;
 use uuid::Uuid;
 
 use crate::{
-    articles::delete::open_delete_dialog_action,
+    articles::{delete::open_delete_dialog_action, ArticleUrl},
     keycloak::ShowWhenAuthenticated,
     utils::{Button, DialogSignal},
 };
@@ -15,13 +16,17 @@ pub fn ArticlesList() -> impl IntoView {
     view! {
         <Suspense fallback=|| view! { "loading....." }>
             {Suspend::new(async move {
-                let articles = RwSignal::new(articles_fn.await);
+                let articles = articles_fn.await
+                    .into_iter()
+                    .map(RwSignal::new)
+                    .collect::<Vec<_>>();
+                let articles = RwSignal::new(articles);
                 let open_delete_dialog = open_delete_dialog_action(dialog, articles);
 
                 { view! {
                     <div class="flex flex-col gap-2">
                         <For each=move || articles.get()
-                            key=|state| state.uuid
+                            key=|state| state.read().uuid
                             let(article)
                         >
                             <ArticleInList article open_delete_dialog/>
@@ -34,18 +39,19 @@ pub fn ArticlesList() -> impl IntoView {
 }
 
 #[component]
-fn ArticleInList(article: Article, open_delete_dialog: Action<Uuid, ()>) -> impl IntoView {
+fn ArticleInList(
+    article: RwSignal<Article>,
+    open_delete_dialog: Action<Uuid, ()>,
+) -> impl IntoView {
     view! {
         <div class="flex flex-col gap-1 p-2 relative overflow-hidden">
-            <h3 class="text-xl text-wrap">{ article.title }</h3>
-            <a href=article.url target="_blank"
-                class="text-blue-600 xl:block hidden"
-            >
-                { format!("[{}]", article.url) }
-            </a>
+            <A href=move || format!("/articles/{}", article.read().uuid)>
+                <h3 class="text-xl text-wrap">{ move || article.get().title }</h3>
+            </A>
+            <ArticleUrl url=Signal::derive(move || article.get().url) add_classes="md:block hidden" />
             <ShowWhenAuthenticated>
                 <div class="mx-2 my-1 absolute top-0 right-0">
-                    <button on:click=move |_| { open_delete_dialog.dispatch(article.uuid); }>
+                    <button on:click=move |_| { open_delete_dialog.dispatch(article.read().uuid); }>
                         <Button>
                             "x"
                         </Button>

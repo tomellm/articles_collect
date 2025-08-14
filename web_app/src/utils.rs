@@ -3,10 +3,14 @@ use std::sync::Arc;
 use leptos::prelude::*;
 
 #[component]
-pub fn CenterColumn(children: ChildrenFn) -> impl IntoView {
+pub fn CenterColumn(
+    #[prop(default = true)] with_border: bool,
+    children: ChildrenFn,
+) -> impl IntoView {
     view! {
         <div class="flex justify-center">
-            <div class="xl:max-w-[1000px] w-full bg-white border-x-2">
+            <div class="md:max-w-[700px] lg:max-w-[850px] xl:max-w-[1000px] w-full bg-white"
+                class=("border-x-2", move || with_border)>
                 <div class="pt-25 min-h-screen">
                     {children()}
                 </div>
