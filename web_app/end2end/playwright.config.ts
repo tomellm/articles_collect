@@ -95,11 +95,11 @@ export default defineConfig({
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
-  // outputDir: 'test-results/',
+   outputDir: '../../target/test-results/',
 
   /* Run your local dev server before starting the tests */
-  // webServer: {
-  //   command: 'npm run start',
-  //   port: 3000,
-  // },
+   webServer: {
+     command: 'cargo -Z unstable-options -C ./../ leptos watch',
+     port: 3000,
+   },
 });

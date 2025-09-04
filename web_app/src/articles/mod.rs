@@ -12,7 +12,7 @@ pub fn ArticleUrl(
 ) -> impl IntoView {
     view! {
         <a href=url target="_blank"
-            class=move || ["text-blue-600", add_classes].join(" ")
+            class=move || ["text-xl text-blue-600", add_classes].join(" ")
         >
             { move || format!("[{}]", url.read()) }
         </a>

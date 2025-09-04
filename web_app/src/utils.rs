@@ -1,4 +1,6 @@
-use std::sync::Arc;
+pub mod busy_container;
+pub mod dialog;
+pub mod screen_sizes;
 
 use leptos::prelude::*;
 
@@ -25,133 +27,33 @@ pub fn Button(children: ChildrenFn) -> impl IntoView {
         <div class="flex justify-content items-center border-2 py-1 px-2
             hover:bg-black hover:text-white bg-white
             hover:border-l-gray-200 hover:border-b-gray-200
-            hover:border-t-gray-950 hover:border-r-gray-950">
+            hover:border-t-gray-950 hover:border-r-gray-950
+            text-xl md:text-base">
             { children() }
         </div>
     }
 }
 
-/// State provided by the user of the context
-/// meaning that every time the Dialog is opend this can be different
-#[derive(Clone)]
-pub struct DialogState {
-    yes_text: String,
-    yes_action: Arc<dyn Fn() + Send + Sync + 'static>,
-    no_text: String,
-    no_action: Arc<dyn Fn() + Send + Sync + 'static>,
-    text: String,
-    title: String,
-}
-
-impl DialogState {
-    pub fn yes<YFn>(yes_action: YFn, title: &str, text: &str) -> Self
-    where
-        YFn: Fn() + Send + Sync + 'static,
-    {
-        Self {
-            yes_text: String::from("yes"),
-            yes_action: Arc::new(yes_action),
-            no_text: String::from("no"),
-            no_action: Arc::new(|| ()),
-            text: text.into(),
-            title: title.into(),
-        }
-    }
-
-    pub fn yes_no<YFn, NFn>(yes_action: YFn, no_action: NFn, title: &str, text: String) -> Self
-    where
-        YFn: Fn() + Send + Sync + 'static,
-        NFn: Fn() + Send + Sync + 'static,
-    {
-        Self {
-            yes_text: String::from("yes"),
-            yes_action: Arc::new(yes_action),
-            no_text: String::from("no"),
-            no_action: Arc::new(no_action),
-            text,
-            title: title.into(),
-        }
-    }
-
-    pub fn debug() -> Self {
-        Self {
-            yes_text: String::from("yes"),
-            yes_action: Arc::new(|| ()),
-            no_text: String::from("no"),
-            no_action: Arc::new(|| ()),
-            text: String::from("text"),
-            title: String::from("title"),
-        }
+#[component]
+pub fn CenteredLoader() -> impl IntoView {
+    view! {
+        <div class="w-full h-full flex justify-center items-center">
+            <div class="m-4">
+                <Loader />
+            </div>
+        </div>
     }
 }
 
-/// Dialog context that contains all of the persistent state about the
-/// Dialog, meaning stuff that doesnt change between uses of the Dialog
-#[derive(Copy, Clone, Default)]
-pub struct DialogSignal(pub RwSignal<Option<DialogState>>);
-
-impl DialogSignal {
-    pub fn is_open(&self) -> bool {
-        self.0.read().is_some()
-    }
-
-    pub fn is_closed(&self) -> bool {
-        self.0.read().is_none()
-    }
-
-    pub fn open(&self, state: DialogState) {
-        self.0.set(Some(state));
-    }
-
-    pub fn open_debug(&self) {
-        self.0.set(Some(DialogState::debug()));
-    }
-
-    pub fn close(&self) {
-        self.0.set(None);
-    }
-
-    pub fn content_text(&self) -> String {
-        self.0
-            .read()
-            .as_ref()
-            .map(|state| state.text.clone())
-            .unwrap_or("Content Text".into())
-    }
-
-    pub fn title_text(&self) -> String {
-        self.0
-            .read()
-            .as_ref()
-            .map(|state| state.title.clone())
-            .unwrap_or("Title Text".into())
-    }
-
-    pub fn yes_text(&self) -> String {
-        self.0
-            .read()
-            .as_ref()
-            .map(|state| state.yes_text.clone())
-            .unwrap_or("Yes".into())
-    }
-
-    pub fn yes_action(&mut self) {
-        if let Some(state) = self.0.write().take() {
-            (state.yes_action)();
-        }
-    }
-
-    pub fn no_text(&self) -> String {
-        self.0
-            .read()
-            .as_ref()
-            .map(|state| state.no_text.clone())
-            .unwrap_or("No".into())
-    }
-
-    pub fn no_action(&mut self) {
-        if let Some(state) = self.0.write().take() {
-            (state.no_action)();
-        }
+#[component]
+pub fn Loader() -> impl IntoView {
+    view! {
+        <div role="status">
+            <svg aria-hidden="true" class="w-12 h-12 text-gray-300 animate-spin fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+            </svg>
+            <span class="sr-only">Loading...</span>
+        </div>
     }
 }
