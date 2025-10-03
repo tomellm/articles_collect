@@ -8,9 +8,9 @@ members = [
 ]
 
 [workspace.dependencies]
-uuid = "1.17.0"
-serde = "1.0.219"
-sea-orm = "1.1.13"
+uuid = "1.18.1"
+serde = "1.0.228"
+sea-orm = "1.1.16"
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
