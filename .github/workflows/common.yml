@@ -24,6 +24,7 @@ jobs:
       run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/leptos-rs/cargo-leptos/releases/latest/download/cargo-leptos-installer.sh | sh
     - name: Add Wasm Target
       run: rustup target add wasm32-unknown-unknown
+        | cargo update -p wasm-bindgen --precise 0.2.104
     - name: Leptos Build
       run: cargo leptos build --release -vv
       
