@@ -19,7 +19,8 @@ jobs:
       run: npm install -g sass
     - name: Add Nigthly
       run: rustup toolchain install nightly
-        | rustup default nightly
+    - name: Set Nightly Default
+      run: rustup default nightly
     - name: Install Cargo Leptos
       run: curl --proto '=https' --tlsv1.2 -LsSf https://github.com/leptos-rs/cargo-leptos/releases/latest/download/cargo-leptos-installer.sh | sh
     - name: Add Wasm Target
