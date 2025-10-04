@@ -6,10 +6,13 @@ use leptos_router::{
 };
 
 use crate::{
-    articles::{edit::EditArticles, list::ArticlesList},
+    articles::{edit::EditArticles, list::ArticlesList, single::SingleArticle},
     keycloak::{InitAuth, KeycloakInfo, LoginButton, Logout, ShowWhenAuthenticated},
     routes::FallbackRoute,
-    utils::{Button, CenterColumn, DialogSignal},
+    utils::{
+        dialog::{DialogSignal, GlobalDialog},
+        Button, CenterColumn,
+    },
 };
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
@@ -58,6 +61,8 @@ pub fn App() -> impl IntoView {
                     <GlobalNavBar />
                     <Routes fallback=FallbackRoute>
                         <Route path=path!("/") view=HomePage />
+                        <Route path=path!("/articles") view=HomePage />
+                        <Route path=path!("/articles/:uuid") view=SingleArticle />
                         <Route path=path!("/edit") view=EditArticles />
                     </Routes>
                 </InitAuth>
@@ -88,11 +93,10 @@ fn GlobalNavBar() -> impl IntoView {
                 class:flex-col=move || nav_open.get()
                 class:h-screen=move || nav_open.get()>
                 <div class="flex justify-between w-full h-20 items-center">
-                    <A href="/">
+                    <A href="/" on:click=move |_| nav_open.set(false)>
                       <h1 class="text-3xl">"Articles Collect"</h1>
                     </A>
-                    <button
-                          on:click=move |_| nav_open.set(!nav_open.get())>
+                    <button on:click=move |_| nav_open.set(!nav_open.get())>
                         <Button>
                             {move || match nav_open.get() {
                                 true => "^",
@@ -102,11 +106,11 @@ fn GlobalNavBar() -> impl IntoView {
                     </button>
                 </div>
 
-                <div class="flex flex-col items-center gap-2"
+                <div class="flex flex-col items-center gap-2 text-2xl"
                     class:hidden=move || !nav_open.get()
                     class:block=move || nav_open.get()>
                     <ShowWhenAuthenticated fallback=|| view!{<LoginButton />}>
-                        <div class="flex flex-col items-center gap-2">
+                        <div class="flex flex-col items-center gap-4">
                             <A href="/edit" on:click=move |_| nav_open.set(false)>
                                 "Add Articles"
                             </A>
@@ -116,44 +120,5 @@ fn GlobalNavBar() -> impl IntoView {
                 </div>
             </nav>
         </div>
-    }
-}
-
-#[component]
-fn GlobalDialog(mut dialog: DialogSignal) -> impl IntoView {
-    view! {
-        <dialog open=move || dialog.is_open()
-            class:block=move || dialog.is_open()
-            class="bg-black/40 z-200 border-box fixed">
-            <div class=" grid place-content-center w-screen h-screen">
-                <form method="dialog" class="bg-white">
-                    <div class="m-5">
-                        <div class="flex justify-between">
-                            <h2 class="text-xl">{ move || dialog.title_text() }</h2>
-                            <button on:click=move |_| dialog.close()>
-                                <Button>
-                                    "x"
-                                </Button>
-                            </button>
-                        </div>
-                        <h3 class="py-2 text-xl">
-                            { move || dialog.content_text() }
-                        </h3>
-                        <div class="flex justify-between">
-                            <button on:click=move |_| dialog.no_action()>
-                                <Button>
-                                    { move || dialog.no_text() }
-                                </Button>
-                            </button>
-                            <button on:click=move |_| dialog.yes_action()>
-                                <Button>
-                                    { move || dialog.yes_text() }
-                                </Button>
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </dialog>
     }
 }
