@@ -15,7 +15,9 @@ use leptos::{
 use leptos_oidc::{Auth, AuthParameters, AuthSignal, Challenge, LoginLink, LogoutLink};
 use leptos_router::components::A;
 use serde::{Deserialize, Serialize};
-use tracing::error;
+use tracing::debug;
+
+use crate::utils::CenteredLoader;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct KeycloakInfo {
@@ -124,27 +126,27 @@ pub fn ExpectAuth(children: ChildrenFn) -> impl IntoView {
     let auth = expect_context::<AuthSignal>();
 
     view! {
-        { move || match auth.get() {
-            Auth::Authenticated(_) => children().into_any(),
-            Auth::Loading => view!{
-                <div class="w-full h-full flex justify-center items-center flex-col">
-                    "loading..."
-                </div>
-            }.into_any(),
-            Auth::Unauthenticated(_) => view!{
-                <div class="w-full h-full flex justify-center items-center gap-2 flex-col">
-                    "Unauthorized!"
-                    <LoginButton />
-                </div>
-            }.into_any(),
-            Auth::Error(auth_error) => view! {
-                <div class="w-full h-full flex justify-center items-center gap-2 flex-col">
-                    <h1>"Authorization Error"</h1>
-                    <p>{ auth_error.to_string() }</p>
-                    <A href="/">"back to the HomePage"</A>
-                </div>
-            }.into_any(),
-        }}
+        <div class="text-2xl py-3">
+            { move || match auth.get() {
+                Auth::Authenticated(_) => children().into_any(),
+                Auth::Loading => view!{
+                    <CenteredLoader />
+                }.into_any(),
+                Auth::Unauthenticated(_) => view!{
+                    <div class="w-full h-full flex justify-center items-center gap-2 flex-col">
+                        "Unauthorized!"
+                        <LoginButton />
+                    </div>
+                }.into_any(),
+                Auth::Error(auth_error) => view! {
+                    <div class="w-full h-full flex justify-center items-center gap-2 flex-col">
+                        <h1>"Authorization Error"</h1>
+                        <p>{ auth_error.to_string() }</p>
+                        <A href="/">"back to the HomePage"</A>
+                    </div>
+                }.into_any(),
+            }}
+        </div>
     }
 }
 
@@ -181,14 +183,15 @@ where
     ) -> impl std::prelude::rust_2024::Future<Output = Result<Self::Response, E>> + Send {
         let headers = req.headers();
         let auth = expect_context::<AuthSignal>()
-            .get()
+            .get_untracked()
             .authenticated()
             .expect_throw(&format!(
-                "You have to be authenticated to make a request to: {}",
+                "you have to be authenticated to make a request to: {}",
                 req.url()
             ))
             .id_token();
         headers.append("Authorization", &format!("Bearer {auth}"));
+        debug!("sending authorized request to: {}", req.url());
         <BrowserClient as Client<E, IS, OS>>::send(req)
     }
 
