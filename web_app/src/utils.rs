@@ -1,5 +1,6 @@
 pub mod busy_container;
 pub mod dialog;
+pub mod extensions;
 pub mod screen_sizes;
 
 use leptos::prelude::*;

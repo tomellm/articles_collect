@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::{env, sync::Arc, time::Duration};
 
 use axum::{
     error_handling::HandleErrorLayer,
@@ -184,7 +184,7 @@ fn setup_keycloak() -> KeycloakAuthLayer<String, ProfileAndEmail> {
         .instance(instance)
         .passthrough_mode(PassthroughMode::Block)
         .persist_raw_claims(false)
-        .expected_audiences(vec!["articles_collect_client".into()])
+        .expected_audiences(vec![env::var("KEYCLOAK_CLIENT_ID").unwrap()])
         .token_extractors(NonEmpty::<Arc<dyn TokenExtractor>> {
             head: Arc::new(AuthHeaderTokenExtractor::default()),
             tail: vec![],

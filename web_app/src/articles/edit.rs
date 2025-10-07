@@ -1,35 +1,81 @@
 use domain::articles::Article;
 use leptos::{form::MultiActionForm, prelude::*, server::ServerMultiAction};
+use web_sys::HtmlTextAreaElement;
 
 use crate::{
     keycloak::{AuthClient, ExpectAuth},
-    utils::{Button, CenterColumn},
+    utils::{
+        extensions::{MultiactionLastSubSignalExtensions, ServerMultiActionExtensions},
+        Button, CenterColumn, CenteredLoader,
+    },
 };
 
 #[component]
 pub fn EditArticles() -> impl IntoView {
     let add_articles = ServerMultiAction::<AddArticles>::new();
+    let links = RwSignal::new(String::new());
+
+    let submission = add_articles.last_submission_signal();
+    let is_pending = submission.pending();
+    let state = submission.state();
+
+    Effect::watch(
+        state,
+        move |val, _, _| {
+            if let Some(Ok(())) = val {
+                links.set(String::new())
+            }
+        },
+        false,
+    );
 
     view! {
         <CenterColumn>
             <ExpectAuth>
                 <MultiActionForm action=add_articles>
-                    <div class="flex flex-col gap-2 p-2">
-                        <div class="flex justify-between">
-                            <label class="underline">
-                                "Upload List of Articles"
-                            </label>
-                            <Button>
-                                <input type="submit" value="Send"/>
-                            </Button>
-                        </div>
-                        <textarea name="file_contents"
-                            class="field-sizing-content h-100 border-1 border-gray-200">
-                        </textarea>
-                    </div>
+                    { move || match is_pending.get() {
+                        true => CenteredLoader().into_any(),
+                        false => AddForm(AddFormProps { links}).into_any(),
+                    }}
                 </MultiActionForm>
             </ExpectAuth>
         </CenterColumn>
+    }
+}
+
+#[component]
+fn AddForm(links: RwSignal<String>) -> impl IntoView {
+    let textarea_ref = NodeRef::new();
+
+    view! {
+        <div class="flex flex-col gap-2 p-2">
+            <div class="flex justify-between">
+                <label class="underline">
+                    "Upload List of Articles"
+                </label>
+                <div class="flex gap-2">
+                    <Show when=move || !links.read().is_empty()>
+                        <Button>
+                            <button on:click=move |_| {
+                                    links.update(|s| s.push('\n'));
+                                    textarea_ref.get().map(|t_ref: HtmlTextAreaElement| t_ref.focus());
+                                }
+                                type="button">
+                                "Newline"
+                            </button>
+                        </Button>
+                    </Show>
+                    <Button>
+                        <input type="submit" value="Send"/>
+                    </Button>
+                </div>
+            </div>
+            <textarea name="file_contents"
+                bind:value=links
+                node_ref=textarea_ref
+                class="field-sizing-content h-100 border-1 border-gray-200">
+            </textarea>
+        </div>
     }
 }
 
