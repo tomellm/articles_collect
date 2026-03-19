@@ -2,13 +2,14 @@
 
 use domain::articles::Article;
 use sea_orm::entity::prelude::*;
-use uuid::Uuid;
+
+use crate::DbArticleUuid;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "articles")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
-    pub uuid: Uuid,
+    pub uuid: DbArticleUuid,
     pub title: String,
     pub url: String,
 }
@@ -20,13 +21,21 @@ impl ActiveModelBehavior for ActiveModel {}
 
 impl From<Model> for Article {
     fn from(Model { uuid, title, url }: Model) -> Self {
-        Article::new(uuid, title, url)
+        Article::builder().uuid(uuid).title(title).url(url).build()
     }
 }
 
 impl From<Article> for Model {
-    fn from(Article { uuid, title, url }: Article) -> Self {
-        Model { uuid, title, url }
+    fn from(
+        Article {
+            uuid, title, url, ..
+        }: Article,
+    ) -> Self {
+        Model {
+            uuid: uuid.into(),
+            title,
+            url,
+        }
     }
 }
 
@@ -53,13 +62,13 @@ mod tests {
 
     fn basic_model() -> Model {
         Model {
-            uuid: Uuid::new_v4(),
+            uuid: Uuid::new_v4().into(),
             title: String::from("title"),
             url: String::from("url"),
         }
     }
 
     fn basic_article() -> Article {
-        Article::from_parts(String::from("title"), String::from("url"))
+        Article::from_parts(String::from("title"), String::from("url"), vec![])
     }
 }

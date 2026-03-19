@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 uuid = { workspace = true, features = ["js", "serde", "v4"] }
 serde = { workspace = true, features = ["derive"] }
+type-state-builder = { workspace = true }

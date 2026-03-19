@@ -7,4 +7,6 @@ edition = "2024"
 domain = { path = "../../domain" }
 
 uuid = { workspace = true, features = ["js", "serde", "v4"] }
+serde = { workspace = true, features = ["derive"] }
 sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+paste = { workspace = true }
