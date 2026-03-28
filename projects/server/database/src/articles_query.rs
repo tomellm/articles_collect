@@ -1,4 +1,4 @@
-use domain::articles::Article;
+use domain::articles::{Article, builder::ArticleMissingTags};
 use sea_orm::{ConnectionTrait, DbErr, EntityTrait, IntoActiveModel};
 use uuid::Uuid;
 
@@ -8,10 +8,10 @@ pub async fn all<C>(db: &C) -> Result<Vec<Article>, DbErr>
 where
     C: ConnectionTrait,
 {
-    articles::Entity::find()
+    let articles: Vec<ArticleMissingTags> = articles::Entity::find()
         .all(db)
         .await
-        .map(|art| art.into_iter().map(Into::into).collect())
+        .map(|art| art.into_iter().map(Into::into).collect())?;
 }
 
 pub async fn one<C>(db: &C, uuid: Uuid) -> Result<Option<Article>, DbErr>

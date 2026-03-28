@@ -1,5 +1,6 @@
 pub mod articles_query;
 mod entities;
+pub mod tags_query;
 
 use domain::articles::ArticleUuid;
 

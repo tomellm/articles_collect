@@ -13,7 +13,8 @@ pub struct Article {
     pub title: String,
     #[builder(required)]
     pub url: String,
-    pub tags: Vec<SimpleTag>,
+    #[builder(required)]
+    pub tags: Box<[SimpleTag]>,
 }
 
 impl Article {
@@ -22,7 +23,7 @@ impl Article {
             uuid,
             title,
             url,
-            tags,
+            tags: tags.into_boxed_slice(),
         }
     }
 
@@ -31,9 +32,15 @@ impl Article {
             uuid: ArticleUuid::new(),
             title,
             url,
-            tags,
+            tags: tags.into_boxed_slice(),
         }
     }
+}
+
+pub mod builder {
+    use crate::articles::ArticleBuilder_HasTitle_HasUrl_MissingTags;
+
+    pub type ArticleMissingTags = ArticleBuilder_HasTitle_HasUrl_MissingTags;
 }
 
 #[cfg(test)]
