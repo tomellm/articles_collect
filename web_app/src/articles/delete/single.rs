@@ -1,7 +1,7 @@
+use domain::articles::ArticleUuid;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use tracing::info;
-use uuid::Uuid;
 
 use crate::{
     articles::delete::delete_article,
@@ -26,8 +26,8 @@ pub fn open_delete_dialog_action(navigate_to: Option<String>) -> DeleteDialogAct
 #[derive(Clone, Copy)]
 pub struct DeleteDialogAction {
     is_open: RwSignal<bool>,
-    dialog_action: Action<Uuid, ()>,
-    _delete_action: Action<Uuid, ()>,
+    dialog_action: Action<ArticleUuid, ()>,
+    _delete_action: Action<ArticleUuid, ()>,
     _last_err: RwSignal<Option<String>>,
 }
 
@@ -37,7 +37,7 @@ impl DeleteDialogAction {
         let is_open = RwSignal::new(false);
         let last_err = RwSignal::new(None);
 
-        let delete_action = Action::new(move |uuid: &Uuid| {
+        let delete_action = Action::new(move |uuid: &ArticleUuid| {
             let uuid = *uuid;
             let navigate_to = navigate_to.clone();
             let navigate = use_navigate();
@@ -56,7 +56,7 @@ impl DeleteDialogAction {
             }
         });
 
-        let dialog_action = Action::new(move |uuid: &Uuid| {
+        let dialog_action = Action::new(move |uuid: &ArticleUuid| {
             let uuid = *uuid;
             async move {
                 dialog.open(DialogState::yes_no(
@@ -81,7 +81,7 @@ impl DeleteDialogAction {
         }
     }
 
-    pub fn open_dialog(&self, uuid: Uuid) {
+    pub fn open_dialog(&self, uuid: ArticleUuid) {
         self.is_open.set(true);
         self.dialog_action.dispatch(uuid);
     }

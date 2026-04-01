@@ -9,10 +9,12 @@ members = [
 
 [workspace.dependencies]
 uuid = "1.18.1"
+itertools = "0.14.0"
 serde = "1.0.228"
 sea-orm = "1.1.16"
-type-state-builder = "0.5.1"
+type-state-builder = { path = "../../type-state-builder" }
 paste = "1.0.15"
+tracing = "0.1.41"
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]

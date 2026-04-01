@@ -64,6 +64,7 @@ pub fn App() -> impl IntoView {
                         <Route path=path!("/articles") view=HomePage />
                         <Route path=path!("/articles/:uuid") view=SingleArticle />
                         <Route path=path!("/edit") view=EditArticles />
+                        <Route path=path!("/tags") view=EditArticles />
                     </Routes>
                 </InitAuth>
             </Router>
@@ -113,6 +114,9 @@ fn GlobalNavBar() -> impl IntoView {
                         <div class="flex flex-col items-center gap-4">
                             <A href="/edit" on:click=move |_| nav_open.set(false)>
                                 "Add Articles"
+                            </A>
+                            <A href="/tags" on:click=move |_| nav_open.set(false)>
+                                "Edit Tags"
                             </A>
                             <Logout />
                         </div>

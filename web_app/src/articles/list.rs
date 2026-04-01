@@ -1,11 +1,11 @@
-use domain::articles::Article;
+use domain::articles::{Article, ArticleUuid};
 use leptos::{component, prelude::*, server, view, IntoView};
 use leptos_router::components::A;
-use uuid::Uuid;
 
 use crate::{
     articles::{delete::list::open_delete_dialog_action_list, ArticleUrl},
     keycloak::ShowWhenAuthenticated,
+    tags::small::SmallTagsList,
     utils::{
         dialog::DialogSignal,
         screen_sizes::{use_width, TailwindScreenSizes},
@@ -45,7 +45,7 @@ pub fn ArticlesList() -> impl IntoView {
 #[component]
 fn ArticleInList(
     article: RwSignal<Article>,
-    open_delete_dialog: Action<Uuid, ()>,
+    open_delete_dialog: Action<ArticleUuid, ()>,
 ) -> impl IntoView {
     let width = use_width();
     view! {
@@ -53,6 +53,7 @@ fn ArticleInList(
             <A href=move || format!("/articles/{}", article.read().uuid)>
                 <h3 class="text-2xl text-wrap">{ move || article.get().title }</h3>
             </A>
+            <SmallTagsList article/>
             <ArticleUrl url=Signal::derive(move || article.get().url) add_classes="md:block hidden" />
             <div class="mx-2 my-1 absolute top-0 right-0 flex gap-2">
                 <Show when=width.is_md()>

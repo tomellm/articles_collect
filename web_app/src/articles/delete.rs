@@ -1,15 +1,15 @@
 pub mod list;
 pub mod single;
 
+use domain::articles::ArticleUuid;
 use leptos::{prelude::*, server};
-use uuid::Uuid;
 
 use crate::keycloak::AuthClient;
 
 #[server(
     client = AuthClient
 )]
-async fn delete_article(article_uuid: Uuid) -> Result<(), ServerFnError> {
+async fn delete_article(article_uuid: ArticleUuid) -> Result<(), ServerFnError> {
     use crate::ServerState;
     use database::articles_query;
 

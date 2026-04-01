@@ -1,5 +1,10 @@
 use std::{env, sync::Arc, time::Duration};
 
+use crate::{
+    app::{shell, App},
+    keycloak::KeycloakInfo,
+    ServerState,
+};
 use axum::{
     error_handling::HandleErrorLayer,
     extract::{Path, State},
@@ -25,11 +30,6 @@ use tower_http::{
     trace::{DefaultOnFailure, DefaultOnRequest, TraceLayer},
 };
 use tracing::{info, warn};
-use web_app::keycloak::KeycloakInfo;
-use web_app::{
-    app::{shell, App},
-    ServerState,
-};
 
 pub async fn file_and_error_handler(
     uri: Uri,
@@ -158,14 +158,17 @@ pub async fn router(leptos_options: LeptosOptions) -> IntoMakeService<Router> {
 
 async fn setup_database() -> Result<DatabaseConnection, DbErr> {
     use std::env;
+    // use migration::{Migrator, MigratorTrait};
 
-    use migration::{Migrator, MigratorTrait};
-    let connection = sea_orm::Database::connect(&env::var("DATABASE_URL").unwrap())
-        .await
-        .unwrap();
+    let mut conn_opt = sea_orm::ConnectOptions::new(env::var("DATABASE_URL").unwrap());
+    conn_opt
+        .sqlx_logging(true)
+        .sqlx_logging_level(tracing::log::LevelFilter::Info);
 
-    let pending_migrations = Migrator::get_pending_migrations(&connection).await?;
-    Migrator::up(&connection, Some(pending_migrations.len() as u32)).await?;
+    let connection = sea_orm::Database::connect(conn_opt).await.unwrap();
+
+    // let pending_migrations = Migrator::get_pending_migrations(&connection).await?;
+    // Migrator::up(&connection, Some(pending_migrations.len() as u32)).await?;
 
     Ok(connection)
 }

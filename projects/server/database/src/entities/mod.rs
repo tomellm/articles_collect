@@ -2,6 +2,6 @@
 
 pub mod prelude;
 
-pub mod articles;
 pub mod article_tags;
+pub mod articles;
 pub mod tags;

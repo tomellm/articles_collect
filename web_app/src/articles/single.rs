@@ -1,17 +1,17 @@
-use domain::articles::Article;
+use domain::articles::{Article, ArticleUuid};
 use leptos::prelude::*;
 use leptos_router::{components::A, hooks::use_params, params::Params};
-use uuid::Uuid;
 
 use crate::{
     articles::{delete::single::open_delete_dialog_action, ArticleUrl},
     keycloak::ShowWhenAuthenticated,
+    tags::small::SmallTagsList,
     utils::{busy_container::BusyContainer, Button, CenterColumn},
 };
 
 #[derive(Params, PartialEq, Eq)]
 pub struct SingleArticleParams {
-    uuid: Uuid,
+    uuid: ArticleUuid,
 }
 
 #[component]
@@ -34,7 +34,7 @@ pub fn SingleArticle() -> impl IntoView {
 }
 
 #[component]
-pub fn LoadingArticle(uuid: Uuid) -> impl IntoView {
+pub fn LoadingArticle(uuid: ArticleUuid) -> impl IntoView {
     let article_fn = OnceResource::new(async move { get_article(uuid).await.unwrap() });
 
     view! {
@@ -66,6 +66,7 @@ pub fn ArticleView(article: RwSignal<Article>) -> impl IntoView {
                 <Title> {move || article.get().title} </Title>
                 <ArticleUrl url=Signal::derive(move || article.get().url)
                     add_classes="text-3xl wrap-break-word" />
+                <SmallTagsList article/>
             </div>
             <div class="flex flex-row-reverse gap-2">
                 <ShowWhenAuthenticated>
@@ -97,7 +98,7 @@ fn Title(children: ChildrenFn) -> impl IntoView {
 }
 
 #[component]
-pub fn NotFound(uuid: Uuid) -> impl IntoView {
+pub fn NotFound(uuid: ArticleUuid) -> impl IntoView {
     view! {
         <Title>"Not Found ;("</Title>
         <p class="text-xl">{format!("Article with the uuid: {uuid} could not be found...")}</p>
@@ -105,7 +106,7 @@ pub fn NotFound(uuid: Uuid) -> impl IntoView {
 }
 
 #[server(prefix = "/public/api")]
-async fn get_article(uuid: Uuid) -> Result<Option<Article>, ServerFnError> {
+async fn get_article(uuid: ArticleUuid) -> Result<Option<Article>, ServerFnError> {
     use crate::ServerState;
     use database::articles_query;
 

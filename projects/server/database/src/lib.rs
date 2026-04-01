@@ -2,9 +2,10 @@ pub mod articles_query;
 mod entities;
 pub mod tags_query;
 
-use domain::articles::ArticleUuid;
+use domain::{articles::ArticleUuid, tags::TagUuid};
 
 uuid_db_impls!(ArticleUuid);
+uuid_db_impls!(TagUuid);
 
 #[macro_export]
 macro_rules! uuid_db_impls {

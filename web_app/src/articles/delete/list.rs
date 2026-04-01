@@ -1,6 +1,5 @@
-use domain::articles::Article;
+use domain::articles::{Article, ArticleUuid};
 use leptos::prelude::*;
-use uuid::Uuid;
 
 use crate::{
     articles::delete::delete_article,
@@ -10,10 +9,10 @@ use crate::{
 pub fn open_delete_dialog_action_list(
     dialog: DialogSignal,
     articles: RwSignal<Vec<RwSignal<Article>>>,
-) -> Action<Uuid, ()> {
+) -> Action<ArticleUuid, ()> {
     let delete_action = delete_action_remove_from_list(articles);
 
-    Action::new(move |uuid: &Uuid| {
+    Action::new(move |uuid: &ArticleUuid| {
         let uuid = *uuid;
         async move {
             dialog.open(DialogState::yes(
@@ -27,8 +26,10 @@ pub fn open_delete_dialog_action_list(
     })
 }
 
-fn delete_action_remove_from_list(articles: RwSignal<Vec<RwSignal<Article>>>) -> Action<Uuid, ()> {
-    Action::new(move |uuid: &Uuid| {
+fn delete_action_remove_from_list(
+    articles: RwSignal<Vec<RwSignal<Article>>>,
+) -> Action<ArticleUuid, ()> {
+    Action::new(move |uuid: &ArticleUuid| {
         let uuid = *uuid;
         async move {
             if delete_article(uuid).await.is_ok() {

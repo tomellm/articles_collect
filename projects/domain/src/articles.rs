@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use type_state_builder::TypeStateBuilder;
 
-use crate::{tags::SimpleTag, type_uuid};
+use crate::{tags::Tag, type_uuid};
 
 type_uuid!(ArticleUuid);
 
@@ -14,25 +14,16 @@ pub struct Article {
     #[builder(required)]
     pub url: String,
     #[builder(required)]
-    pub tags: Box<[SimpleTag]>,
+    pub tags: Box<[Tag]>,
 }
 
 impl Article {
-    pub fn new(uuid: ArticleUuid, title: String, url: String, tags: Vec<SimpleTag>) -> Self {
-        Self {
-            uuid,
-            title,
-            url,
-            tags: tags.into_boxed_slice(),
-        }
-    }
-
-    pub fn from_parts(title: String, url: String, tags: Vec<SimpleTag>) -> Self {
+    pub fn from_parts(title: String, url: String) -> Self {
         Self {
             uuid: ArticleUuid::new(),
             title,
             url,
-            tags: tags.into_boxed_slice(),
+            tags: vec![].into_boxed_slice(),
         }
     }
 }
@@ -51,7 +42,7 @@ mod tests {
     fn article_from_parts_sets_valid_uuid() {
         let title = String::from("title");
         let url = String::from("url");
-        let art = Article::from_parts(title.clone(), url.clone(), vec![]);
+        let art = Article::from_parts(title.clone(), url.clone());
         assert!(!art.uuid.is_nil());
         assert!(!art.uuid.is_max());
         assert_eq!(title, art.title);
