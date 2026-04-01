@@ -3,18 +3,49 @@ resolver = "3"
 members = [ 
     "projects/domain", 
     "projects/server/database",
+    "projects/web_app_lib",
     "web_app",
     "migration"
 ]
 
 [workspace.dependencies]
-uuid = "1.18.1"
+domain = { path = "projects/domain" }
+database = { path = "projects/server/database" }
+web_app_lib = { path = "projects/web_app_lib" }
+migration = { path = "migration" }
+
+dotenv = { version = "0.15.0" }
+uuid = { version = "1.18.1", features = ["js", "serde", "v4"] }
 itertools = "0.14.0"
-serde = "1.0.228"
-sea-orm = "1.1.16"
+serde = { version = "1.0.228", features = ["derive"] }
+anyhow = { version = "1.0.100" }
+futures = { version = "0.3.31" }
+paste = { version = "1.0.15" }
 type-state-builder = { path = "../../type-state-builder" }
-paste = "1.0.15"
+
+leptos = { version = "0.8.10", features = ["nightly"] }
+leptos_router = { version = "0.8.8", features = ["nightly"] }
+leptos_axum = { version = "0.8.6" }
+leptos_meta = { version = "0.8.5" }
+leptos-use = { version = "0.18.3" }
+leptos_oidc = { version = "0.9.0" } # https://gitlab.com/kerkmann/leptos_oidc/-/tree/main
+
+axum = { version = "0.8", features = ["macros"] }
+tokio = { version = "1", features = ["rt-multi-thread"] }
+axum-keycloak-auth = { version = "0.8.3" }
+tower = { version = "0.5.2" }
+tower-http = { version = "0.6.6", features = ["fs", "trace"] }
+sea-orm = { version = "1.1.16", features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+
+console_error_panic_hook = { version = "0.1"}
+wasm-bindgen = { version = "=0.2.114" }
+web-sys = { version = "0.3.81", features=["HtmlTextAreaElement"] }
+
 tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.20" }
+tracing-wasm = { version = "0.2.1" }
+
+# headless_chrome = { version = "1.0.17", optional = true }
 
 # Defines a size-optimized profile for the WASM bundle in release mode
 [profile.wasm-release]
@@ -28,7 +59,7 @@ panic = "abort"
 # project name
 name = "articles_collect"
 bin-package = "web_app"
-lib-package = "web_app"
+lib-package = "web_app_lib"
 
 # The name used by wasm-bindgen/cargo-leptos for the JS/WASM bundle. Defaults to the crate name
 output-name = "web_app"

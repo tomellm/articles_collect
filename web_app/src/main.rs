@@ -3,7 +3,7 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    web_app::server_start().await
+    web_app_lib::server_start().await
 }
 
 #[cfg(not(feature = "ssr"))]
