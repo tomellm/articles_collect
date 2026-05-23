@@ -1,4 +1,6 @@
-use domain::articles::{self, Article, ArticleUuid};
+#[cfg(feature = "ssr")]
+use domain::articles;
+use domain::articles::{Article, ArticleUuid};
 use leptos::{IntoView, component, prelude::*, server, view};
 use leptos_router::components::A;
 

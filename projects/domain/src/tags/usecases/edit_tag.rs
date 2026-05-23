@@ -31,11 +31,18 @@ pub async fn edit_tag(
 
     let tag = Tag::builder()
         .uuid(tag_uuid)
-        .name(tag_name)
-        .description(tag_description)
+        .name(tag_name.clone())
+        .description(tag_description.clone())
         .build();
 
     repo.update(tag).await.map_err(EditTagError::from)?;
+
+    tracing::info!(
+        "updated tag '{}' with name '{}' and description of length '{}'",
+        tag_uuid,
+        tag_name,
+        tag_description.len()
+    );
 
     Ok(())
 }

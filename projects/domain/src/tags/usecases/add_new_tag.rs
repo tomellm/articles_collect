@@ -23,11 +23,18 @@ pub async fn add_new_tag(
     }
 
     let tag = Tag::builder()
-        .name(tag_name)
-        .description(tag_description)
+        .name(tag_name.clone())
+        .description(tag_description.clone())
         .build();
 
     repo.insert(tag.clone()).await.map_err(AddTagError::from)?;
+
+    tracing::info!(
+        "created tag '{}' with name '{}' and description of length '{}'",
+        tag.uuid,
+        tag_name,
+        tag_description.len()
+    );
 
     Ok(tag)
 }

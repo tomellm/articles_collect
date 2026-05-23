@@ -1,7 +1,6 @@
 use domain::articles::ArticleUuid;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
-use tracing::info;
 
 use crate::{
     articles::delete::delete_article,
@@ -64,7 +63,6 @@ impl DeleteDialogAction {
                         delete_action.dispatch(uuid);
                     },
                     move || {
-                        info!("close....");
                         is_open.set(false);
                     },
                     "Delete Item?",

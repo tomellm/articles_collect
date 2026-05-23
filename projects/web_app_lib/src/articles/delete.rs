@@ -1,7 +1,9 @@
 pub mod list;
 pub mod single;
 
-use domain::articles::{self, ArticleUuid};
+#[cfg(feature = "ssr")]
+use domain::articles;
+use domain::articles::ArticleUuid;
 use leptos::{prelude::*, server};
 
 use crate::keycloak::AuthClient;

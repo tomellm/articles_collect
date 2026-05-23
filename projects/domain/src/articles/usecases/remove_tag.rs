@@ -21,6 +21,12 @@ pub async fn remove_tag(
         .await
         .map_err(RemoveTagError::from)?;
 
+    tracing::info!(
+        "removed tag with id '{}' from article with id '{}'",
+        tag_uuid,
+        article_uuid
+    );
+
     Ok(())
 }
 

@@ -2,7 +2,9 @@ mod add;
 mod edit;
 mod form;
 
-use domain::tags::{self, TagUuid, TagWithCount};
+#[cfg(feature = "ssr")]
+use domain::tags;
+use domain::tags::{TagUuid, TagWithCount};
 use leptos::prelude::*;
 
 use crate::{

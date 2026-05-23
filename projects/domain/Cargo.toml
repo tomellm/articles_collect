@@ -6,5 +6,6 @@ edition = "2024"
 [dependencies]
 uuid = { workspace = true }
 serde = { workspace = true }
+tracing = { workspace = true }
 type-state-builder = { workspace = true }
 thiserror = { workspace = true }

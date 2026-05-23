@@ -29,7 +29,6 @@ use tower_http::{
     services::ServeDir,
     trace::{DefaultOnFailure, DefaultOnRequest, TraceLayer},
 };
-use tracing::{info, warn};
 
 pub async fn file_and_error_handler(
     uri: Uri,
@@ -42,7 +41,7 @@ pub async fn file_and_error_handler(
     if res.status() == StatusCode::OK {
         res.into_response()
     } else {
-        warn!("{:?}:{}", res.status(), uri);
+        tracing::warn!("{:?}:{}", res.status(), uri);
         let handler =
             leptos_axum::render_app_to_stream(|| error_template(RwSignal::new(Errors::default())));
         handler(req).await.into_response()
@@ -93,7 +92,7 @@ async fn server_fn_handler(
     path: Path<String>,
     request: Request<axum::body::Body>,
 ) -> impl IntoResponse {
-    info!("Request to: '{:?}'", path);
+    tracing::trace!("Request to: '{:?}'", path);
 
     handle_server_fns_with_context(move || server_state.register_all_to_context(), request).await
 }

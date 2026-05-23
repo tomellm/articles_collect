@@ -1,4 +1,6 @@
-use domain::tags::{self, TagUuid};
+#[cfg(feature = "ssr")]
+use domain::tags;
+use domain::tags::TagUuid;
 use leptos::prelude::*;
 
 use crate::{

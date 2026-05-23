@@ -1,5 +1,7 @@
 use leptos::prelude::*;
-use leptos_meta::{MetaTags, Stylesheet, Title, provide_meta_context};
+#[cfg(feature = "ssr")]
+use leptos_meta::MetaTags;
+use leptos_meta::{Stylesheet, Title, provide_meta_context};
 use leptos_router::{
     components::{A, Route, Router, Routes},
     path,
@@ -16,6 +18,7 @@ use crate::{
     },
 };
 
+#[cfg(feature = "ssr")]
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
         <!DOCTYPE html>

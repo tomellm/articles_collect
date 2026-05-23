@@ -1,3 +1,8 @@
+#![cfg_attr(
+    not(any(feature = "hydrate", feature = "ssr")),
+    allow(dead_code, unused_imports, unused_variables)
+)]
+
 mod app;
 mod articles;
 mod keycloak;
@@ -23,10 +28,10 @@ pub async fn server_start() {
 
     // setup logging for different libs
     let log_filter = tracing_subscriber::filter::Targets::new()
-        .with_default(tracing::Level::INFO)
         .with_target("tokio", tracing::Level::WARN)
         .with_target("runtime", tracing::Level::WARN)
-        .with_target("sqlx::query", tracing::Level::WARN);
+        .with_target("sqlx::query", tracing::Level::WARN)
+        .with_default(tracing::Level::INFO);
 
     // setup formatting for layers
     let fmt_layer = tracing_subscriber::fmt::layer()
@@ -37,10 +42,9 @@ pub async fn server_start() {
         .with_thread_names(false)
         .with_thread_ids(false);
 
-    let fmt_layer_filtered = fmt_layer.with_filter(log_filter);
-
     tracing_subscriber::Registry::default()
-        .with(fmt_layer_filtered)
+        .with(fmt_layer)
+        .with(log_filter)
         .init();
 
     let conf = get_configuration(None).unwrap();

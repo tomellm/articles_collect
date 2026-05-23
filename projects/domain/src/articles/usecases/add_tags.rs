@@ -27,9 +27,16 @@ pub async fn add_tags(
         other => Err(AddTagsError::TagsAlreadyAssigned(other.to_vec())),
     }?;
 
+    let tags_len = tag_uuids.len();
     repo.add_tags(article_uuid, tag_uuids)
         .await
         .map_err(AddTagsError::from)?;
+
+    tracing::info!(
+        "added {} tags to article with id '{}'",
+        tags_len,
+        article_uuid
+    );
 
     Ok(())
 }

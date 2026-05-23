@@ -1,4 +1,6 @@
-use domain::tags::{self, TagUuid};
+#[cfg(feature = "ssr")]
+use domain::tags;
+use domain::tags::TagUuid;
 use leptos::prelude::*;
 
 use crate::{
@@ -67,4 +69,3 @@ async fn add_tag(tag_name: String, tag_description: String) -> Result<(), Server
 
     Ok(())
 }
-

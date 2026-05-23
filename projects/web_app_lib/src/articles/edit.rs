@@ -1,4 +1,5 @@
-use domain::articles::{self};
+#[cfg(feature = "ssr")]
+use domain::articles;
 use leptos::{form::MultiActionForm, prelude::*, server::ServerMultiAction};
 use web_sys::HtmlTextAreaElement;
 

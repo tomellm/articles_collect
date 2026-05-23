@@ -8,9 +8,11 @@ use crate::{
         dialog::{DialogSignal, DialogState},
     },
 };
+#[cfg(feature = "ssr")]
+use domain::tags;
 use domain::{
     articles::{Article, ArticleUuid},
-    tags::{self, ITag, Tag, TagUuid},
+    tags::{ITag, Tag, TagUuid},
 };
 use leptos::prelude::*;
 
@@ -140,8 +142,6 @@ fn add_tags_action(
 async fn get_tags() -> Result<Vec<Tag>, ServerFnError> {
     use database::tags_query::TagsRepositoryImpl;
     use std::sync::Arc;
-
-    tracing::info!("getting tags");
 
     let repo = expect_context::<Arc<TagsRepositoryImpl>>();
 

@@ -18,9 +18,14 @@ pub async fn add_articles_from_textarea(
             let title = get_title_from_url(line.clone());
             Article::from_parts(title, line)
         })
-        .collect();
+        .collect::<Vec<_>>();
 
-    repo.insert_many(articles).await
+    let articles_len = articles.len();
+    repo.insert_many(articles).await?;
+
+    tracing::info!("inserted {articles_len} new articles");
+
+    Ok(())
 }
 
 fn get_title_from_url(mut url: String) -> String {
