@@ -35,13 +35,15 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("FK_tags_articles")
                             .from(ArticleTags::Table, ArticleTags::TagUuid)
-                            .to(Tags::Table, Tags::Uuid),
+                            .to(Tags::Table, Tags::Uuid)
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .foreign_key(
                         ForeignKey::create()
                             .name("FK_article_tags")
                             .from(ArticleTags::Table, ArticleTags::ArticleUuid)
-                            .to(Articles::Table, Articles::Uuid),
+                            .to(Articles::Table, Articles::Uuid)
+                            .on_delete(ForeignKeyAction::Cascade),
                     )
                     .to_owned(),
             )
@@ -52,6 +54,10 @@ impl MigrationTrait for Migration {
 
     async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
         // Replace the sample below with your own migration scripts
+        manager
+            .drop_table(Table::drop().table(ArticleTags::Table).to_owned())
+            .await?;
+
         manager
             .drop_table(Table::drop().table(Tags::Table).to_owned())
             .await

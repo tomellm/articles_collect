@@ -1,12 +1,12 @@
-use domain::articles::Article;
+use domain::articles::{self};
 use leptos::{form::MultiActionForm, prelude::*, server::ServerMultiAction};
 use web_sys::HtmlTextAreaElement;
 
 use crate::{
     keycloak::{AuthClient, ExpectAuth},
     utils::{
-        extensions::{MultiactionLastSubSignalExtensions, ServerMultiActionExtensions},
         Button, CenterColumn, CenteredLoader,
+        extensions::{MultiactionLastSubSignalExtensions, ServerMultiActionExtensions},
     },
 };
 
@@ -23,7 +23,7 @@ pub fn EditArticles() -> impl IntoView {
         state,
         move |val, _, _| {
             if let Some(Ok(())) = val {
-                links.set(String::new())
+                links.set(String::new());
             }
         },
         false,
@@ -35,7 +35,7 @@ pub fn EditArticles() -> impl IntoView {
                 <MultiActionForm action=add_articles>
                     { move || match is_pending.get() {
                         true => CenteredLoader().into_any(),
-                        false => AddForm(AddFormProps { links}).into_any(),
+                        false => AddForm(AddFormProps { links }).into_any(),
                     }}
                 </MultiActionForm>
             </ExpectAuth>
@@ -55,18 +55,15 @@ fn AddForm(links: RwSignal<String>) -> impl IntoView {
                 </label>
                 <div class="flex gap-2">
                     <Show when=move || !links.read().is_empty()>
-                        <Button>
-                            <button on:click=move |_| {
-                                    links.update(|s| s.push('\n'));
-                                    textarea_ref.get().map(|t_ref: HtmlTextAreaElement| t_ref.focus());
-                                }
-                                type="button">
-                                "Newline"
-                            </button>
+                        <Button on_click=move || {
+                                links.update(|s| s.push('\n'));
+                                textarea_ref.get().map(|t_ref: HtmlTextAreaElement| t_ref.focus());
+                            }>
+                            "Newline"
                         </Button>
                     </Show>
-                    <Button>
-                        <input type="submit" value="Send"/>
+                    <Button button_type="submit">
+                        "Send"
                     </Button>
                 </div>
             </div>
@@ -79,77 +76,19 @@ fn AddForm(links: RwSignal<String>) -> impl IntoView {
     }
 }
 
+/// Endpoint to add a list of new articles, the file_contents parameter will
+/// be parsed as a list of url's that are then loaded a separate articles. The
+/// requester needs to be authenticated to make this request
 #[server(
     client = AuthClient
 )]
 async fn add_articles(file_contents: String) -> Result<(), ServerFnError> {
-    use crate::ServerState;
-    use database::articles_query;
+    use database::articles_query::ArticlesRepositoryImpl;
+    use std::sync::Arc;
 
-    if file_contents.is_empty() {
-        return Ok(());
-    }
+    let repo = expect_context::<Arc<ArticlesRepositoryImpl>>();
 
-    let state = expect_context::<ServerState>();
-
-    let articles = file_contents
-        .lines()
-        .map(|line| {
-            let line = String::from(line);
-            let title = get_title_from_url(line.clone());
-            Article::from_parts(title, line)
-        })
-        .collect();
-
-    Ok(articles_query::insert_many(articles, &state.db).await?)
-}
-
-#[cfg(any(feature = "ssr", test))]
-fn get_title_from_url(mut url: String) -> String {
-    let url = if url.starts_with("https://") {
-        let _ = url.drain(0..8);
-        url
-    } else if url.starts_with("http://") {
-        let _ = url.drain(0..7);
-        url
-    } else {
-        url
-    };
-    let mut parts = url.split('/');
-    let first = parts.next().unwrap().to_string();
-    let last = parts.rev().find(|p| !p.is_empty() && !p.eq(&first));
-
-    match last {
-        Some(last) => format!("{first} - {last}"),
-        None => first,
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn get_title_from_url_https_ending_slash() {
-        let url = "https://www.nasa.gov/centers-and-facilities/stennis/stennis-first-open-source-software/".into();
-        let res = get_title_from_url(url);
-        assert_eq!(
-            String::from("www.nasa.gov - stennis-first-open-source-software"),
-            res
-        );
-    }
-
-    #[test]
-    fn get_title_from_url_https() {
-        let url = "https://github.com/mrkline/modern-latex".into();
-        let res = get_title_from_url(url);
-        assert_eq!(String::from("github.com - modern-latex"), res);
-    }
-
-    #[test]
-    fn get_title_from_url_http() {
-        let url = "http://github.com/mrkline/modern-latex".into();
-        let res = get_title_from_url(url);
-        assert_eq!(String::from("github.com - modern-latex"), res);
-    }
+    articles::usecases::add_articles_from_textarea(file_contents, &*repo)
+        .await
+        .map_err(ServerFnError::from)
 }

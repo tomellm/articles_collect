@@ -1,15 +1,11 @@
-#[cfg(feature = "ssr")]
-use axum::extract::FromRef;
-use leptos::config::LeptosOptions;
-#[cfg(feature = "ssr")]
-use sea_orm::DatabaseConnection;
-
 mod app;
 mod articles;
 mod keycloak;
 mod routes;
 #[cfg(feature = "ssr")]
 mod server_router;
+#[cfg(feature = "ssr")]
+mod state;
 mod tags;
 mod utils;
 
@@ -25,12 +21,14 @@ pub async fn server_start() {
         warn!("loading .env file failed: {err}");
     }
 
+    // setup logging for different libs
     let log_filter = tracing_subscriber::filter::Targets::new()
         .with_default(tracing::Level::INFO)
         .with_target("tokio", tracing::Level::WARN)
         .with_target("runtime", tracing::Level::WARN)
         .with_target("sqlx::query", tracing::Level::WARN);
 
+    // setup formatting for layers
     let fmt_layer = tracing_subscriber::fmt::layer()
         .pretty()
         .with_file(true)
@@ -56,20 +54,6 @@ pub async fn server_start() {
     info!("listening on http://{}", &addr);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app_service).await.unwrap();
-}
-
-#[cfg(feature = "ssr")]
-#[derive(FromRef, Debug, Clone)]
-pub struct ServerState {
-    pub db: DatabaseConnection,
-    pub leptos_options: LeptosOptions,
-}
-
-#[cfg(feature = "ssr")]
-impl ServerState {
-    pub fn new(db: DatabaseConnection, leptos_options: LeptosOptions) -> Self {
-        Self { db, leptos_options }
-    }
 }
 
 #[cfg(feature = "hydrate")]

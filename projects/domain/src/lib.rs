@@ -1,4 +1,7 @@
+#![allow(async_fn_in_trait)]
+
 pub mod articles;
+pub mod common;
 pub mod tags;
 
 #[macro_export]

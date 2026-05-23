@@ -1,3 +1,9 @@
+pub mod out;
+pub mod query;
+pub mod usecases;
+
+use std::mem;
+
 use serde::{Deserialize, Serialize};
 use type_state_builder::TypeStateBuilder;
 
@@ -25,6 +31,10 @@ impl Article {
             url,
             tags: vec![].into_boxed_slice(),
         }
+    }
+
+    pub fn take_tags(&mut self) -> Box<[Tag]> {
+        mem::replace(&mut self.tags, vec![].into_boxed_slice())
     }
 }
 

@@ -19,6 +19,7 @@ uuid = { version = "1.18.1", features = ["js", "serde", "v4"] }
 itertools = "0.14.0"
 serde = { version = "1.0.228", features = ["derive"] }
 anyhow = { version = "1.0.100" }
+thiserror = { version = "2.0.18"}
 futures = { version = "0.3.31" }
 paste = { version = "1.0.15" }
 type-state-builder = { path = "../../type-state-builder" }

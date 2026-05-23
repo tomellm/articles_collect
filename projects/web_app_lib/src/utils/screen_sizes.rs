@@ -36,6 +36,7 @@ impl Default for Width {
     }
 }
 
+#[allow(unused)]
 pub trait TailwindScreenSizes {
     fn is_sm(&self) -> Signal<bool>;
     fn is_md(&self) -> Signal<bool>;

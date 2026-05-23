@@ -1,18 +1,25 @@
-use domain::articles::{Article, ArticleUuid};
-use leptos::{component, prelude::*, server, view, IntoView};
+use domain::articles::{self, Article, ArticleUuid};
+use leptos::{IntoView, component, prelude::*, server, view};
 use leptos_router::components::A;
 
 use crate::{
-    articles::{delete::list::open_delete_dialog_action_list, ArticleUrl},
+    articles::{ArticleUrl, delete::list::open_delete_dialog_action_list},
     keycloak::ShowWhenAuthenticated,
-    tags::small::SmallTagsList,
+    tags::article_tags::SmallTagsList,
     utils::{
+        Button, CenteredLoader, NoButton,
         dialog::DialogSignal,
-        screen_sizes::{use_width, TailwindScreenSizes},
-        Button, CenteredLoader,
+        screen_sizes::{TailwindScreenSizes, use_width},
     },
 };
 
+/// Component that loads the articles from the backend and then displays them
+/// in a list of [ArticleInList] components
+///
+/// # Panics
+///
+/// Panics if fetching the list of articles returns an error, since that is
+/// expected to work.
 #[component]
 pub fn ArticlesList() -> impl IntoView {
     let articles_fn = OnceResource::new(async { get_articles().await.unwrap() });
@@ -42,6 +49,13 @@ pub fn ArticlesList() -> impl IntoView {
     }
 }
 
+/// The component to display an article in a list of articles. The component
+/// will adapt to the width of the screen, meaning that for wider screens the
+/// url of the article will be shown directly, otherwise an arrow will appear
+/// to allow the use to navigate to the article directly.
+///
+/// The component also contains functionality to navigate to the articles page
+/// on this website, als well to delete the article if authenticated.
 #[component]
 fn ArticleInList(
     article: RwSignal<Article>,
@@ -58,28 +72,31 @@ fn ArticleInList(
             <div class="mx-2 my-1 absolute top-0 right-0 flex gap-2">
                 <Show when=width.is_md()>
                     <a href=move || article.get().url target="_blank" class="text-blue-600">
-                        <Button>
+                        <NoButton>
                             "->"
-                        </Button>
+                        </NoButton>
                     </a>
                 </Show>
                 <ShowWhenAuthenticated>
-                    <button on:click=move |_| { open_delete_dialog.dispatch(article.read().uuid); }>
-                        <Button>
-                            "x"
-                        </Button>
-                    </button>
+                    <Button on_click=move || { open_delete_dialog.dispatch(article.read().uuid); }>
+                        "x"
+                    </Button>
                 </ShowWhenAuthenticated>
             </div>
         </div>
     }
 }
 
+/// Endpoint to request the current list of articles. Will return the complete
+/// list of articles. The requester does not need to be authenticated
 #[server(prefix = "/public/api")]
 async fn get_articles() -> Result<Vec<Article>, ServerFnError> {
-    use crate::ServerState;
-    use database::articles_query;
+    use database::articles_query::ArticlesRepositoryImpl;
+    use std::sync::Arc;
 
-    let state = expect_context::<ServerState>();
-    Ok(articles_query::all(&state.db).await?)
+    let repo = expect_context::<Arc<ArticlesRepositoryImpl>>();
+
+    articles::query::all(&*repo)
+        .await
+        .map_err(ServerFnError::from)
 }

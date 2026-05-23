@@ -1,12 +1,10 @@
 use std::env;
 
-#[cfg(feature = "ssr")]
-use axum_keycloak_auth::decode::KeycloakToken;
 use futures::{Sink, Stream};
 use leptos::{
     prelude::*,
     server_fn::{
-        client::{browser::BrowserClient, Client},
+        client::{Client, browser::BrowserClient},
         request::browser::BrowserRequest,
         response::browser::BrowserResponse,
     },
@@ -148,23 +146,6 @@ pub fn ExpectAuth(children: ChildrenFn) -> impl IntoView {
             }}
         </div>
     }
-}
-
-#[cfg(feature = "ssr")]
-pub async fn keycloak_token() -> Result<KeycloakToken<String>, ServerFnError> {
-    use axum::Extension;
-    use axum_keycloak_auth::decode::KeycloakToken;
-    use leptos_axum::extract;
-    use tracing::error;
-
-    let Extension(token) = extract::<Extension<KeycloakToken<String>>>()
-        .await
-        .map_err(|err| {
-            error!("error getting keycloak auth token: {err}");
-            err
-        })?;
-
-    Ok(token)
 }
 
 pub struct AuthClient;

@@ -2,7 +2,31 @@ pub mod articles_query;
 mod entities;
 pub mod tags_query;
 
+use std::sync::Arc;
+
 use domain::{articles::ArticleUuid, tags::TagUuid};
+use sea_orm::DatabaseConnection;
+
+use crate::{articles_query::ArticlesRepositoryImpl, tags_query::TagsRepositoryImpl};
+
+/// struct containing all different database repositories as arcs
+#[derive(Clone)]
+pub struct DbState {
+    /// articles repository
+    pub articles: Arc<ArticlesRepositoryImpl>,
+    /// tags repository
+    pub tags: Arc<TagsRepositoryImpl>,
+}
+
+impl From<DatabaseConnection> for DbState {
+    fn from(value: DatabaseConnection) -> Self {
+        let tags = Arc::new(TagsRepositoryImpl::new(value.clone()));
+        Self {
+            tags: Arc::clone(&tags),
+            articles: Arc::new(ArticlesRepositoryImpl::new(value, tags)),
+        }
+    }
+}
 
 uuid_db_impls!(ArticleUuid);
 uuid_db_impls!(TagUuid);

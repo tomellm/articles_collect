@@ -1,7 +1,7 @@
 use leptos::prelude::*;
-use leptos_meta::{provide_meta_context, MetaTags, Stylesheet, Title};
+use leptos_meta::{MetaTags, Stylesheet, Title, provide_meta_context};
 use leptos_router::{
-    components::{Route, Router, Routes, A},
+    components::{A, Route, Router, Routes},
     path,
 };
 
@@ -9,9 +9,10 @@ use crate::{
     articles::{edit::EditArticles, list::ArticlesList, single::SingleArticle},
     keycloak::{InitAuth, KeycloakInfo, LoginButton, Logout, ShowWhenAuthenticated},
     routes::FallbackRoute,
+    tags::edit::EditTags,
     utils::{
-        dialog::{DialogSignal, GlobalDialog},
         Button, CenterColumn,
+        dialog::{DialogSignal, GlobalDialog},
     },
 };
 
@@ -64,7 +65,7 @@ pub fn App() -> impl IntoView {
                         <Route path=path!("/articles") view=HomePage />
                         <Route path=path!("/articles/:uuid") view=SingleArticle />
                         <Route path=path!("/edit") view=EditArticles />
-                        <Route path=path!("/tags") view=EditArticles />
+                        <Route path=path!("/tags") view=EditTags />
                     </Routes>
                 </InitAuth>
             </Router>
@@ -82,6 +83,8 @@ pub fn HomePage() -> impl IntoView {
     }
 }
 
+/// The global navbar that allows for naviation between pages and other actions
+/// like login and logout
 #[component]
 fn GlobalNavBar() -> impl IntoView {
     let nav_open = RwSignal::new(false);
@@ -97,14 +100,12 @@ fn GlobalNavBar() -> impl IntoView {
                     <A href="/" on:click=move |_| nav_open.set(false)>
                       <h1 class="text-3xl">"Articles Collect"</h1>
                     </A>
-                    <button on:click=move |_| nav_open.set(!nav_open.get())>
-                        <Button>
-                            {move || match nav_open.get() {
-                                true => "^",
-                                false => "v"
-                            }}
-                        </Button>
-                    </button>
+                    <Button on_click=move || nav_open.set(!nav_open.get())>
+                        {move || match nav_open.get() {
+                            true => "^",
+                            false => "v"
+                        }}
+                    </Button>
                 </div>
 
                 <div class="flex flex-col items-center gap-2 text-2xl"

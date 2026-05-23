@@ -1,28 +1,28 @@
 use std::{env, sync::Arc, time::Duration};
 
 use crate::{
-    app::{shell, App},
+    app::{App, shell},
     keycloak::KeycloakInfo,
-    ServerState,
+    state::ServerState,
 };
 use axum::{
+    BoxError, Router,
     error_handling::HandleErrorLayer,
     extract::{Path, State},
     http::{Request, StatusCode, Uri},
     response::IntoResponse,
-    routing::{get, IntoMakeService},
-    BoxError, Router,
+    routing::{IntoMakeService, get},
+};
+use axum_keycloak_auth::{
+    NonEmpty, PassthroughMode, Url,
+    extract::{AuthHeaderTokenExtractor, TokenExtractor},
+    instance::KeycloakConfig,
 };
 use axum_keycloak_auth::{
     decode::ProfileAndEmail, instance::KeycloakAuthInstance, layer::KeycloakAuthLayer,
 };
-use axum_keycloak_auth::{
-    extract::{AuthHeaderTokenExtractor, TokenExtractor},
-    instance::KeycloakConfig,
-    NonEmpty, PassthroughMode, Url,
-};
 use leptos::{config::LeptosOptions, error::Errors, prelude::*, view};
-use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
+use leptos_axum::{LeptosRoutes, generate_route_list, handle_server_fns_with_context};
 use sea_orm::{DatabaseConnection, DbErr};
 use tower::{ServiceBuilder, ServiceExt};
 use tower_http::{
@@ -95,13 +95,7 @@ async fn server_fn_handler(
 ) -> impl IntoResponse {
     info!("Request to: '{:?}'", path);
 
-    handle_server_fns_with_context(
-        move || {
-            provide_context(server_state.clone());
-        },
-        request,
-    )
-    .await
+    handle_server_fns_with_context(move || server_state.register_all_to_context(), request).await
 }
 
 pub async fn leptos_routes_handler(
@@ -111,15 +105,21 @@ pub async fn leptos_routes_handler(
     let options = server_state.leptos_options.clone();
 
     let handler = leptos_axum::render_app_async_with_context(
-        move || {
-            provide_context(server_state.clone());
-        },
+        move || server_state.register_all_to_context(),
         move || shell(options.clone()),
     );
 
     handler(request).await.into_response()
 }
 
+/// Creates the axum router that will then handle all of the requests on the
+/// backend. This also contains things like public and private routes as well
+/// as error handeling and authentication.
+///
+/// # Panics
+///
+/// Panics if something doesnt work on startup since there is not reason to do
+/// a clean error return, the service should just crash
 pub async fn router(leptos_options: LeptosOptions) -> IntoMakeService<Router> {
     let connection = setup_database().await.unwrap();
     let state = ServerState::new(connection, leptos_options);
@@ -202,7 +202,8 @@ async fn handle_keycloak_auth_error(
 ) -> (StatusCode, String) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
-        format!("failed with {err}"),
-        //format!("`{method} {uri}` failed with {err}"),
+        format!("keycloak auth failed with {err}"),
+        // cant be used because I would need the other parameters, method uri
+        // format!("keycloak auth `{method} {uri}` failed with {err}"),
     )
 }

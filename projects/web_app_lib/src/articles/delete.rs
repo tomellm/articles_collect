@@ -1,34 +1,23 @@
 pub mod list;
 pub mod single;
 
-use domain::articles::ArticleUuid;
+use domain::articles::{self, ArticleUuid};
 use leptos::{prelude::*, server};
 
 use crate::keycloak::AuthClient;
 
+/// Endpoint for deleting articles. The requester needs to be authenticated to
+/// make this request
 #[server(
     client = AuthClient
 )]
 async fn delete_article(article_uuid: ArticleUuid) -> Result<(), ServerFnError> {
-    use crate::ServerState;
-    use database::articles_query;
+    use database::articles_query::ArticlesRepositoryImpl;
+    use std::sync::Arc;
 
-    let state = expect_context::<ServerState>();
-    Ok(articles_query::delete(article_uuid, &state.db).await?)
-}
+    let repo = expect_context::<Arc<ArticlesRepositoryImpl>>();
 
-#[cfg(test)]
-mod tests {
-
-    // https://github.com/SeaQL/sea-orm/pull/2590
-    //
-    // waiting for this pr to go through before writing tests
-    //
-    //fn delete_article_server_func_deletes_article() {
-    //    let mock_db =
-    //        MockDatabase::new(DatabaseBackend::Postgres).append_exec_results([MockExecResult {
-    //            last_insert_id: 0,
-    //            rows_affected: 1,
-    //        }]);
-    //}
+    articles::usecases::delete(article_uuid, &*repo)
+        .await
+        .map_err(ServerFnError::from)
 }

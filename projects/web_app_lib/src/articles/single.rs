@@ -1,12 +1,12 @@
-use domain::articles::{Article, ArticleUuid};
+use domain::articles::{self, Article, ArticleUuid};
 use leptos::prelude::*;
 use leptos_router::{components::A, hooks::use_params, params::Params};
 
 use crate::{
-    articles::{delete::single::open_delete_dialog_action, ArticleUrl},
+    articles::{ArticleUrl, delete::single::open_delete_dialog_action},
     keycloak::ShowWhenAuthenticated,
-    tags::small::SmallTagsList,
-    utils::{busy_container::BusyContainer, Button, CenterColumn},
+    tags::article_tags::SmallTagsListWithControls,
+    utils::{Button, CenterColumn, NoButton, busy_container::BusyContainer},
 };
 
 #[derive(Params, PartialEq, Eq)]
@@ -57,26 +57,24 @@ pub fn ArticleView(article: RwSignal<Article>) -> impl IntoView {
         <BusyContainer busy_state=delete_dialog>
             <div class="flex">
                 <A href="/articles">
-                    <Button>
-                    "<-"
-                    </Button>
+                    <NoButton>
+                        "<-"
+                    </NoButton>
                 </A>
             </div>
             <div class="mb-4">
                 <Title> {move || article.get().title} </Title>
                 <ArticleUrl url=Signal::derive(move || article.get().url)
                     add_classes="text-3xl wrap-break-word" />
-                <SmallTagsList article/>
+                <SmallTagsListWithControls article/>
             </div>
             <div class="flex flex-row-reverse gap-2">
                 <ShowWhenAuthenticated>
-                    <button on:click=move |_| {
+                    <Button on_click=move || {
                         delete_dialog.open_dialog(article.read().uuid);
                     }>
-                        <Button>
-                            "delete"
-                        </Button>
-                    </button>
+                        "delete"
+                    </Button>
                 </ShowWhenAuthenticated>
                 <a href=move || article.get().url target="_blank">
                     <Button>
@@ -107,9 +105,12 @@ pub fn NotFound(uuid: ArticleUuid) -> impl IntoView {
 
 #[server(prefix = "/public/api")]
 async fn get_article(uuid: ArticleUuid) -> Result<Option<Article>, ServerFnError> {
-    use crate::ServerState;
-    use database::articles_query;
+    use database::articles_query::ArticlesRepositoryImpl;
+    use std::sync::Arc;
 
-    let state = expect_context::<ServerState>();
-    Ok(articles_query::one(&state.db, uuid).await?)
+    let repo = expect_context::<Arc<ArticlesRepositoryImpl>>();
+
+    articles::query::one(uuid, &*repo)
+        .await
+        .map_err(ServerFnError::from)
 }

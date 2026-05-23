@@ -1,13 +1,22 @@
 pub mod busy_container;
+mod button;
 pub mod dialog;
 pub mod extensions;
 pub mod screen_sizes;
 
 use leptos::prelude::*;
 
+pub use button::{Button, NoButton};
+
+/// The center column that should be placed at the root of the page. When
+/// the page reaches a certain size, it will add space to the sides allowing
+/// the content to stay in the middle of the page
 #[component]
 pub fn CenterColumn(
-    #[prop(default = true)] with_border: bool,
+    /// if the sides of the column should have borders or not
+    #[prop(default = true)]
+    with_border: bool,
+    /// the contents of the column
     children: ChildrenFn,
 ) -> impl IntoView {
     view! {
@@ -18,19 +27,6 @@ pub fn CenterColumn(
                     {children()}
                 </div>
             </div>
-        </div>
-    }
-}
-
-#[component]
-pub fn Button(children: ChildrenFn) -> impl IntoView {
-    view! {
-        <div class="flex justify-content items-center border-2 py-1 px-2
-            hover:bg-black hover:text-white bg-white
-            hover:border-l-gray-200 hover:border-b-gray-200
-            hover:border-t-gray-950 hover:border-r-gray-950
-            text-xl md:text-base">
-            { children() }
         </div>
     }
 }

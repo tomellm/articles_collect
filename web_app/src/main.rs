@@ -1,4 +1,5 @@
 #![allow(non_snake_case)]
+#![allow(async_fn_in_trait)]
 
 #[cfg(feature = "ssr")]
 #[tokio::main]
