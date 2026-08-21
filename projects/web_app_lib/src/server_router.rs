@@ -157,7 +157,6 @@ pub async fn router(leptos_options: LeptosOptions) -> IntoMakeService<Router> {
 
 async fn setup_database() -> Result<DatabaseConnection, DbErr> {
     use std::env;
-    // use migration::{Migrator, MigratorTrait};
 
     let mut conn_opt = sea_orm::ConnectOptions::new(env::var("DATABASE_URL").unwrap());
     conn_opt
@@ -166,8 +165,13 @@ async fn setup_database() -> Result<DatabaseConnection, DbErr> {
 
     let connection = sea_orm::Database::connect(conn_opt).await.unwrap();
 
-    // let pending_migrations = Migrator::get_pending_migrations(&connection).await?;
-    // Migrator::up(&connection, Some(pending_migrations.len() as u32)).await?;
+    #[cfg(feature = "automigrate")]
+    {
+        use migration::{Migrator, MigratorTrait};
+
+        let pending_migrations = Migrator::get_pending_migrations(&connection).await?;
+        Migrator::up(&connection, Some(pending_migrations.len() as u32)).await?;
+    }
 
     Ok(connection)
 }
