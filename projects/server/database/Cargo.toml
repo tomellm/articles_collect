@@ -5,6 +5,12 @@ edition = "2024"
 
 [dependencies]
 domain = { path = "../../domain" }
+tracing = { workspace = true }
 
 uuid = { workspace = true, features = ["js", "serde", "v4"] }
+itertools = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 sea-orm = { workspace = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+paste = { workspace = true }
+
+axum = { workspace = true }

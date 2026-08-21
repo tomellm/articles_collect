@@ -1,0 +1,5 @@
+error: Duplicate setter_prefix attribute. Only one setter_prefix is allowed per field
+ --> tests/ui/duplicate-setter-prefix.rs:7:15
+  |
+7 |     #[builder(setter_prefix = "set_")]
+  |               ^^^^^^^^^^^^^^^^^^^^^^

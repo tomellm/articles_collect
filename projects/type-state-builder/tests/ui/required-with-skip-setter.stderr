@@ -1,0 +1,7 @@
+error: Required fields cannot skip setters
+       note: #[builder(skip_setter)] and #[builder(required)] are incompatible
+       help: remove one of incompatible attributes
+ --> tests/ui/required-with-skip-setter.rs:7:5
+  |
+7 |     name: String,
+  |     ^^^^

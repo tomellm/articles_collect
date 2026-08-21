@@ -1,0 +1,68 @@
+[package]
+name = "web_app_lib"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+domain = { workspace = true }
+database = { workspace = true, optional = true }
+migration = { workspace = true, optional = true }
+
+dotenv = { workspace = true, optional = true }
+uuid = { workspace = true, features = ["js", "serde", "v4"] }
+
+leptos = { workspace = true, features = ["nightly"] }
+leptos_router = { workspace = true, features = ["nightly"] }
+leptos_axum = { workspace = true, optional = true }
+leptos_meta = { workspace = true }
+leptos-use = { workspace = true }
+leptos_oidc = { workspace = true } # https://gitlab.com/kerkmann/leptos_oidc/-/tree/main
+
+axum = { workspace = true, optional = true, features = ["macros"] }
+tokio = { workspace = true, features = ["rt-multi-thread"], optional = true }
+serde = { workspace = true, features = ["derive"] }
+axum-keycloak-auth = { workspace = true, optional = true }
+tower = { workspace = true, optional = true }
+tower-http = { workspace = true, features = ["fs", "trace"], optional = true }
+
+console_error_panic_hook = { workspace = true, optional = true}
+wasm-bindgen = { workspace = true, optional = true }
+web-sys = { workspace = true, features=["HtmlTextAreaElement"] }
+
+tracing ={ workspace = true } 
+tracing-subscriber = { workspace = true, optional = true }
+tracing-wasm = { workspace = true, optional = true }
+
+# headless_chrome = { version = "1.0.17", optional = true }
+sea-orm = { workspace = true, optional = true, features = ["sqlx-postgres", "runtime-tokio-native-tls", "macros"] }
+anyhow ={ workspace = true } 
+futures = { workspace = true }
+
+[features]
+hydrate = [
+    "dep:tracing-wasm",
+    "dep:console_error_panic_hook",
+    "dep:wasm-bindgen",
+    "leptos/hydrate",
+]
+ssr = [
+    "dep:dotenv",
+    "dep:axum",
+    "dep:tokio",
+    "dep:leptos_axum",
+    "dep:tracing-subscriber",
+    # "dep:headless_chrome",
+    "dep:sea-orm",
+    "dep:migration",
+    "dep:database",
+    "dep:axum-keycloak-auth",
+    "dep:tower",
+    "dep:tower-http",
+    "leptos/ssr",
+    "leptos_meta/ssr",
+    "leptos_router/ssr",
+    "leptos-use/ssr"
+]

@@ -1,0 +1,5 @@
+error: Duplicate setter_name attribute. Only one setter_name is allowed per field
+ --> tests/ui/duplicate-field-attributes.rs:7:15
+  |
+7 |     #[builder(setter_name = "first_name")]
+  |               ^^^^^^^^^^^^^^^^^^^^^^^^^^

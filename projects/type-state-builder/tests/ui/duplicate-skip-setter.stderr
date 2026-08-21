@@ -1,0 +1,5 @@
+error: Duplicate skip_setter attribute. Only one skip_setter is allowed per field
+ --> tests/ui/duplicate-skip-setter.rs:9:15
+  |
+9 |     #[builder(skip_setter)]
+  |               ^^^^^^^^^^^

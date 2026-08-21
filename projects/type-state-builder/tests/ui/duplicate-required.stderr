@@ -1,0 +1,5 @@
+error: Duplicate required attribute. Only one required is allowed per field
+ --> tests/ui/duplicate-required.rs:7:15
+  |
+7 |     #[builder(required)]
+  |               ^^^^^^^^
