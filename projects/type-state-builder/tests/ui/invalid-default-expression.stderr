@@ -1,0 +1,5 @@
+error[E0425]: cannot find function `this_function_does_not_exist` in this scope
+ --> tests/ui/invalid-default-expression.rs:8:25
+  |
+8 |     #[builder(default = this_function_does_not_exist())]
+  |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not found in this scope

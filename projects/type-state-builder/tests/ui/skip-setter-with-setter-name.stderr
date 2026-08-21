@@ -1,0 +1,7 @@
+error: Field 'count' has conflicting attributes: skip_setter and setter_name
+       note: #[builder(skip_setter)] and #[builder(setter_name)] are incompatible
+       help: remove one of incompatible attributes
+ --> tests/ui/skip-setter-with-setter-name.rs:9:5
+  |
+9 |     count: u32,
+  |     ^^^^^
