@@ -56,7 +56,6 @@ ssr = [
     "dep:tracing-subscriber",
     # "dep:headless_chrome",
     "dep:sea-orm",
-    "dep:migration",
     "dep:database",
     "dep:axum-keycloak-auth",
     "dep:tower",
@@ -64,5 +63,9 @@ ssr = [
     "leptos/ssr",
     "leptos_meta/ssr",
     "leptos_router/ssr",
-    "leptos-use/ssr"
+    "leptos-use/ssr",
+    "automigrate"
+]
+automigrate = [
+    "dep:migration"
 ]
