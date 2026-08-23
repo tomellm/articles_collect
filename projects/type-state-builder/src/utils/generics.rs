@@ -125,7 +125,7 @@ pub fn has_generics_or_lifetimes(ty: &Type) -> bool {
             // Check the pointed-to type
             return has_generics_or_lifetimes(&type_ptr.elem);
         }
-        Type::BareFn(bare_fn) => {
+        Type::FnPtr(bare_fn) => {
             // Function pointers may have lifetimes in their signature
             if bare_fn.lifetimes.is_some() {
                 return true;
