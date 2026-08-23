@@ -53,7 +53,7 @@ use crate::generation::TokenGenerator;
 use crate::utils::field_utils::{resolve_effective_impl_into, resolve_setter_parameter_config};
 use crate::utils::identifiers::{snake_case_to_pascal_case, strip_raw_identifier_prefix};
 use quote::quote;
-use syn::Ident;
+use syn::{Ident, Type};
 
 /// Generates a complete type-state builder implementation.
 ///
@@ -261,34 +261,27 @@ impl<'a> TypeStateBuilderCoordinator<'a> {
             .iter()
             .enumerate()
             .filter(|(index, _)| state_combination.set_fields.contains(index))
-            .map(|(_, field)| {
-                let field_type = field.field_type();
-                (field, quote! {#field_type})
-            })
+            .map(|(_, field)| field)
             .collect::<Vec<_>>();
 
         let field_tokens = self
             .token_generator
             .analysis()
             .all_fields()
-            .filter(|field| !set_fields.iter().any(|f| f.0.name().eq(field.name())))
             .map(|field| {
                 let field_type = {
                     let field_type = field.field_type();
-                    match field.has_custom_default() {
-                        true => quote! { #field_type },
-                        false => {
-                            let option_type = self.token_generator.generate_type_path("Option");
-                            quote! {#option_type<#field_type>}
-                        }
+                    let is_set_field = set_fields.iter().any(|f| f.name().eq(field.name()));
+                    if field.is_required() && !is_set_field {
+                        let option_type = self.token_generator.generate_type_path("Option");
+                        quote! { #option_type<#field_type> }
+                    } else {
+                        quote! { #field_type }
                     }
                 };
 
                 (field, field_type)
             })
-            .collect::<Vec<_>>()
-            .into_iter()
-            .chain(set_fields)
             .map(|(field, field_type)| {
                 let field_name = field.name();
                 let getter_name = quote::format_ident!("get_{}", field_name);
