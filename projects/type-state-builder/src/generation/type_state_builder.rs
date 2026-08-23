@@ -52,7 +52,6 @@ use crate::analysis::StructAnalysis;
 use crate::generation::TokenGenerator;
 use crate::utils::field_utils::{resolve_effective_impl_into, resolve_setter_parameter_config};
 use crate::utils::identifiers::{snake_case_to_pascal_case, strip_raw_identifier_prefix};
-use proc_macro2::token_stream;
 use quote::quote;
 use syn::Ident;
 
@@ -207,7 +206,6 @@ impl<'a> TypeStateBuilderCoordinator<'a> {
         let analysis = self.token_generator.analysis();
 
         // Generate generic parameters for the builder type
-        let impl_generics = self.token_generator.impl_generics_tokens();
         let type_generics = self.token_generator.type_generics_tokens();
         let where_clause = self.token_generator.where_clause_tokens();
 
@@ -277,11 +275,12 @@ impl<'a> TypeStateBuilderCoordinator<'a> {
             .map(|field| {
                 let field_type = {
                     let field_type = field.field_type();
-                    let option_type = self.token_generator.generate_type_path("Option");
-
                     match field.has_custom_default() {
                         true => quote! { #field_type },
-                        false => quote! {#option_type<#field_type>},
+                        false => {
+                            let option_type = self.token_generator.generate_type_path("Option");
+                            quote! {#option_type<#field_type>}
+                        }
                     }
                 };
 
